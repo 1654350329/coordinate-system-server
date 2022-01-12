@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tree.clouds.coordination.mapper.UserManageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tree.clouds.coordination.model.entity.UserManage">
+        <result column="USER_ID" property="userId"/>
+        <result column="USER_NAME" property="userName"/>
+        <result column="PHONE_NUMBER" property="phoneNumber"/>
+        <result column="UNIT" property="unit"/>
+        <result column="SEX" property="sex"/>
+        <result column="JOB" property="job"/>
+        <result column="TITLE_GRADE" property="titleGrade"/>
+        <result column="ACCOUNT" property="account"/>
+        <result column="PASSWORD" property="password"/>
+        <result column="WECHAT_AUTHORIZATION" property="wechatAuthorization"/>
+        <result column="RECEIVE_NOTICE_STATUS" property="receiveNoticeStatus"/>
+        <result column="ACCOUNT_STATUS" property="accountStatus"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATED_USER" property="createdUser"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_USER" property="updatedUser"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="DEL" property="del"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        USER_ID, USER_NAME, PHONE_NUMBER, UNIT, SEX, JOB, TITLE_GRADE, ACCOUNT, PASSWORD, WECHAT_AUTHORIZATION, RECEIVE_NOTICE_STATUS, ACCOUNT_STATUS, REMARK, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
+    </sql>
+    <select id="userManagePage" resultType="com.tree.clouds.coordination.model.vo.UserManageVO">
+        select b.* from group_user a
+        left join user_manage b on a.user_id=b.user_id
+        where 1=1 and a.group_id=#{userManagePageVO.groupId}
+
+        <if test="userManagePageVO.account != null and userManagePageVO.account != ''">
+            and b.account like "%"#{userManagePageVO.account}"%"
+        </if>
+        <if test="userManagePageVO.userName != null and userManagePageVO.userName != ''">
+            and b.user_name like "%"#{userManagePageVO.userName}"%"
+        </if>
+    </select>
+    <select id="listByMenuId" resultType="com.tree.clouds.coordination.model.entity.UserManage">
+        select DISTINCT a.* from user_manage a
+            LEFT JOIN role_user  b on a.USER_ID=b.USER_ID
+            LEFT JOIN sys_role_menu c on b.ROLE_ID=c.role_id
+            where c.menu_id=#{menuId}
+    </select>
+
+</mapper>

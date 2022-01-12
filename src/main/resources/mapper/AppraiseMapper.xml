@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tree.clouds.coordination.mapper.AppraiseMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tree.clouds.coordination.model.entity.Appraise">
+        <result column="APPRAISE_ID" property="appraiseId"/>
+        <result column="WRITING_BATCH_ID" property="writingBatchId"/>
+        <result column="APPRAISE_TIME" property="appraiseTime"/>
+        <result column="APPRAISE_GRADE" property="appraiseGrade"/>
+        <result column="GRADING_PRINCIPLE" property="gradingPrinciple"/>
+        <result column="APPRAISE_RESULT" property="appraiseResult"/>
+        <result column="CREATED_USER" property="createdUser"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_USER" property="updatedUser"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="DEL" property="del"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        APPRAISE_ID
+        , WRITING_BATCH_ID, APPRAISE_TIME, APPRAISE_GRADE, GRADING_PRINCIPLE, APPRAISE_RESULT, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
+    </sql>
+    <select id="appraisePage" resultType="com.tree.clouds.coordination.model.bo.AppraiseBO">
+        select b.*,a.WRITING_BATCH_ID,a.APPRALSE_NUMBER,a.APPRALSE_STATUS,a.APPRAISE_ID from appraise a
+        left JOIN data_report b on a.report_ID=b.report_ID
+        where 1=1
+        <if test="appraisePageVO.writingBatchId != null and appraisePageVO.writingBatchId !=''">
+            and a.WRITING_BATCH_ID=#{appraisePageVO.writingBatchId}
+        </if>
+        <if test="appraisePageVO.appralseNumber != null and appraisePageVO.appralseNumber !=''">
+            and a.appralse_number=#{appraisePageVO.appralseNumber}
+        </if>
+        <if test="appraisePageVO.category != null and appraisePageVO.category !=''">
+            and b.category=#{appraisePageVO.category}
+        </if>
+        <if test="appraisePageVO.sort != null and appraisePageVO.sort !=''">
+            and b.sort=#{appraisePageVO.sort}
+        </if>
+        <if test="appraisePageVO.phoneNumber != null and appraisePageVO.phoneNumber !=''">
+            and b.phone_number=#{appraisePageVO.phoneNumber}
+        </if>
+        <if test="appraisePageVO.taskType != null and appraisePageVO.taskType !=''">
+            and b.task_type=#{appraisePageVO.taskType}
+        </if>
+    </select>
+    <select id="getAppralseNumber" resultType="java.lang.String">
+        select APPRALSE_NUMBER
+        from appraise
+        where CREATED_TIME like #{time}"%"
+        ORDER BY CREATED_TIME DESC limit 1
+    </select>
+    <select id="expertGroupInfo" resultType="com.tree.clouds.coordination.model.vo.ExpertGroupInfo">
+   select d.*,c.GROUP_LEADER from appraise a
+        left join evaluation_sheet b on a.WRITING_BATCH_ID=b.WRITING_BATCH_ID
+				left JOIN evaluation_sheet_detail c on b.EVALUATION_ID= c.EVALUATION_ID
+				left join user_manage d on c.USER_ID=d.USER_ID
+				where c.PARTICIPATION_STATUS =1 and a.report_id=#{reportId}
+    </select>
+
+</mapper>

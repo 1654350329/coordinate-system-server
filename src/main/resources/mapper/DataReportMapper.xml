@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tree.clouds.coordination.mapper.DataReportMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tree.clouds.coordination.model.entity.DataReport">
+        <result column="REPORT_ID" property="reportId"/>
+        <result column="IDENTIFIED_NAME" property="identifiedName"/>
+        <result column="CATEGORY" property="category"/>
+        <result column="sort" property="sort"/>
+        <result column="UNIT_NAME" property="unitName"/>
+        <result column="SICK_TIME" property="sickTime"/>
+        <result column="SICK_CONDITION" property="sickCondition"/>
+        <result column="RECEIVING_TIME" property="receivingTime"/>
+        <result column="NATIVE_PLACE" property="nativePlace"/>
+        <result column="PHONE_NUMBER" property="phoneNumber"/>
+        <result column="ADDRESS" property="address"/>
+        <result column="CREATED_USER" property="createdUser"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_USER" property="updatedUser"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="DEL" property="del"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        REPORT_ID
+        , IDENTIFIED_NAME, CATEGORY, sort, UNIT_NAME, SICK_TIME, SICK_CONDITION, RECEIVING_TIME, NATIVE_PLACE,
+        PHONE_NUMBER, ADDRESS, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
+    </sql>
+    <select id="selectDataReport" resultType="com.tree.clouds.coordination.model.bo.DataReportBO">
+        select a.* ,b.REVIEW_AND_SIGNATURE_ID from data_report a
+        left join review_signature b on a.report_id=b.report_id
+        where 1=1 and a.del=0
+        <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
+            and a.IDENTIFIED_NUMBER=#{dataReportPageVO.identifiedName}
+        </if>
+        <if test="dataReportPageVO.category != null and dataReportPageVO.category !=''">
+            and a.CATEGORY=#{dataReportPageVO.category}
+        </if>
+        <if test="dataReportPageVO.sort != null and dataReportPageVO.sort != ''">
+            and a.SORT=#{dataReportPageVO.sort}
+        </if>
+        <if test="dataReportPageVO.unitName != null  and dataReportPageVO.unitName != ''">
+            and a.UNIT_NAME like "%"#{dataReportPageVO.unitName}"%"
+        </if>
+        <if test="dataReportPageVO.sickTimeStart != null and dataReportPageVO.sickTimeStart != ''">
+            and a.SICK_TIME >= #{dataReportPageVO.sickTimeStart}
+        </if>
+        <if test="dataReportPageVO.sickTimeDnd != null and dataReportPageVO.sickTimeDnd != ''">
+            and a.SICK_TIME &lt;= #{dataReportPageVO.sickTimeDnd}
+        </if>
+        <if test="dataReportPageVO.taskType != null and dataReportPageVO.taskType != ''">
+            and a.TASK_TYPE=#{dataReportPageVO.taskType}
+        </if>
+        <if test="dataReportPageVO.examineStatus != null and dataReportPageVO.examineStatus != ''">
+            and a.EXAMINE_STATUS =#{dataReportPageVO.examineStatus}
+        </if>
+        <if test="dataReportPageVO.examineProgress != null">
+            and a.EXAMINE_PROGRESS =#{dataReportPageVO.examineProgress}
+        </if>
+        <if test="dataReportPageVO.receivingTimeStart != null and dataReportPageVO.receivingTimeStart != ''">
+            and a.RECEIVING_TIME &lt;= #{dataReportPageVO.receivingTimeStart}
+        </if>
+        <if test="dataReportPageVO.receivingTimeEnd != null and dataReportPageVO.receivingTimeEnd != ''">
+            and REPORT_ID >= #{dataReportPageVO.receivingTimeEnd}
+        </if>
+    </select>
+    <select id="getDetailInfo" resultType="com.tree.clouds.coordination.model.bo.ReportDetailInfoBO">
+        select a.*, b.APPRAISE_GRADE, b.APPRAISE_RESULT, b.APPRALSE_NUMBER
+        from data_report a
+        left join appraise b on a.report_ID = b.report_ID
+        where a.REPORT_ID in
+        <foreach collection="reports" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

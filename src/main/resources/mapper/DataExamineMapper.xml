@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tree.clouds.coordination.mapper.DataExamineMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tree.clouds.coordination.model.entity.DataExamine">
+        <result column="Data_examine_ID" property="dataExamineId"/>
+        <result column="data_report_id" property="reportId"/>
+        <result column="examine_status" property="examineStatus"/>
+        <result column="examine_describe" property="examineDescribe"/>
+        <result column="examine_time" property="examineTime"/>
+        <result column="examine_user" property="examineUser"/>
+        <result column="CREATED_USER" property="createdUser"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_USER" property="updatedUser"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        Data_examine_ID, data_report_id, examine_status, examine_describe, examine_time, examine_user, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME
+    </sql>
+    <select id="dataExaminePage" resultType="com.tree.clouds.coordination.model.bo.DataExamineBo">
+        select a.Data_examine_ID,a.examine_time,a.examine_user, b.*
+        from data_examine a
+        LEFT JOIN data_report b on a.report_ID=b.REPORT_ID
+        where 1=1
+        <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
+            and b.IDENTIFIED_NUMBER=#{dataReportPageVO.identifiedName}
+        </if>
+        <if test="dataReportPageVO.category != null and dataReportPageVO.category !=''">
+            and b.CATEGORY=#{dataReportPageVO.category}
+        </if>
+        <if test="dataReportPageVO.sort != null and dataReportPageVO.sort != ''">
+            and b.SORT=#{dataReportPageVO.sort}
+        </if>
+        <if test="dataReportPageVO.unitName != null  and dataReportPageVO.unitName != ''">
+            and b.UNIT_NAME=#{dataReportPageVO.unitName}
+        </if>
+        <if test="dataReportPageVO.sickTimeStart != null and dataReportPageVO.sickTimeStart != ''">
+            and b.SICK_TIME >= #{dataReportPageVO.sickTimeStart}
+        </if>
+        <if test="dataReportPageVO.sickTimeDnd != null and dataReportPageVO.sickTimeDnd != ''">
+            and b.SICK_TIME &lt;= #{dataReportPageVO.sickTimeDnd}
+        </if>
+        <if test="dataReportPageVO.taskType != null and dataReportPageVO.taskType != ''">
+            and b.TASK_TYPE=#{dataReportPageVO.taskType}
+        </if>
+        <if test="dataReportPageVO.examineStatus != null and dataReportPageVO.examineStatus != ''">
+            and b.EXAMINE_STATUS =#{dataReportPageVO.examineStatus}
+        </if>
+        <if test="dataReportPageVO.examineProgress != null">
+            and b.EXAMINE_PROGRESS =#{dataReportPageVO.examineProgress}
+        </if>
+        <if test="dataReportPageVO.examineProgress == null or dataReportPageVO.examineProgress == 0">
+            and b.EXAMINE_PROGRESS &lt; 3
+        </if>
+        <if test="dataReportPageVO.receivingTimeStart != null and dataReportPageVO.receivingTimeStart != ''">
+            and b.RECEIVING_TIME &lt;= #{dataReportPageVO.receivingTimeStart}
+        </if>
+        <if test="dataReportPageVO.receivingTimeEnd != null and dataReportPageVO.receivingTimeEnd != ''">
+            and REPORT_ID >= #{dataReportPageVO.receivingTimeEnd}
+        </if>
+    </select>
+
+</mapper>

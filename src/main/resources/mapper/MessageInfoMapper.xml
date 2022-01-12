@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tree.clouds.coordination.mapper.MessageInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tree.clouds.coordination.model.entity.MessageInfo">
+        <result column="MESSAGE_ID" property="messageId"/>
+        <result column="WRITING_BATCH_ID" property="writingBatchId"/>
+        <result column="MESSAGE_STATUS" property="messageStatus"/>
+        <result column="COMPLETION_TIME" property="completionTime"/>
+        <result column="COMPLETION_METHOD" property="completionMethod"/>
+        <result column="CREATED_USER" property="createdUser"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_USER" property="updatedUser"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="DEL" property="del"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        MESSAGE_ID
+        , WRITING_BATCH_ID, MESSAGE_STATUS, COMPLETION_TIME, COMPLETION_METHOD, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
+    </sql>
+    <select id="messageInfoPage" resultType="com.tree.clouds.coordination.model.bo.MessageInfoBO">
+        select a.* ,b.* from message_info a
+        LEFT JOIN data_report b ON a.report_ID = b.report_ID
+        where 1=1
+        <if test="messageInfoPage.writingBatchId != null and messageInfoPage.writingBatchId != ''">
+            and a.writingBatchId like "%"#{messageInfoPage.writingBatchId}"%"
+        </if>
+        <if test="messageInfoPage.identifiedName != null and messageInfoPage.identifiedName != ''">
+            and b.identified_name like "%"#{messageInfoPage.identifiedName}"%"
+        </if>
+        <if test="messageInfoPage.phoneNumber != null and messageInfoPage.phoneNumber != ''">
+            and b.phone_number = #{messageInfoPage.phoneNumber}
+        </if>
+        <if test="messageInfoPage.taskType != null and messageInfoPage.taskType != ''">
+            and b.task_type = #{messageInfoPage.taskType}
+        </if>
+        <if test="messageInfoPage.sex != null and messageInfoPage.sex != ''">
+            and b.sex = #{messageInfoPage.sex}
+        </if>
+        <if test="messageInfoPage.messageStatus != null and messageInfoPage.messageStatus != ''">
+            and a.message_status = #{messageInfoPage.messageStatus}
+        </if>
+        <if test="messageInfoPage.completionMethod != null and messageInfoPage.completionMethod != ''">
+            and a.completion_method = #{messageInfoPage.completionMethod}
+        </if>
+        <if test="messageInfoPage.completionTimeStart != null and messageInfoPage.completionTimeStart != ''">
+            and b.completion_time >= #{messageInfoPage.completionTimeStart}
+        </if>
+        <if test="messageInfoPage.completionTimeEnd != null and messageInfoPage.completionTimeEnd != ''">
+            and b.completion_time &lt;= #{messageInfoPage.completionTimeEnd}
+        </if>
+    </select>
+
+</mapper>

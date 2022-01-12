@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tree.clouds.coordination.mapper.EvaluationSheetMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tree.clouds.coordination.model.entity.EvaluationSheet">
+        <result column="EVALUATION_ID" property="evaluationId"/>
+        <result column="WRITING_BATCH_ID" property="writingBatchId"/>
+        <result column="YEAR" property="year"/>
+        <result column="MONTH" property="month"/>
+        <result column="CYCLE_TIME" property="cycleTime"/>
+        <result column="EVALUATION_NUMBER" property="evaluationNumber"/>
+        <result column="EVALUATION_STATUS" property="evaluationStatus"/>
+        <result column="EXPERT_NUMBER" property="expertNumber"/>
+        <result column="ALTERNATIVE_EXPERT_NUMBER" property="alternativeExpertNumber"/>
+        <result column="DRAW_TIME" property="drawTime"/>
+        <result column="CREATED_USER" property="createdUser"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_USER" property="updatedUser"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="DEL" property="del"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        EVALUATION_ID
+        , WRITING_BATCH_ID, YEAR, MONTH, CYCLE_TIME, EVALUATION_NUMBER, EVALUATION_STATUS, EXPERT_NUMBER, ALTERNATIVE_EXPERT_NUMBER, DRAW_TIME, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
+    </sql>
+    <select id="writingBatch" resultType="java.lang.String">
+      select DISTINCT a.WRITING_BATCH_ID from evaluation_sheet a
+        left join review_signature b on a.WRITING_BATCH_ID=b.WRITING_BATCH_ID
+        where b.REVIEW_status='0'
+    </select>
+    <select id="getNumber" resultType="java.lang.String">
+        select number
+        from evaluation_sheet
+        where year =#{year}
+          and month =#{month}
+          and sort=#{sort}
+        order by number desc limit 1
+    </select>
+    <select id="evaluationSheetPage" resultType="com.tree.clouds.coordination.model.entity.EvaluationSheet">
+        select a.* from evaluation_sheet a
+        left join user_manage b on a.CREATED_USER=b.USER_ID
+        where 1=1
+        <if test="evaluationSheetPageVO.writingBatchId != null and evaluationSheetPageVO.writingBatchId !=''">
+            and WRITING_BATCH_ID like "%"#{evaluationSheetPageVO.writingBatchId}"%"
+        </if>
+        <if test="evaluationSheetPageVO.createUser != null and evaluationSheetPageVO.createUser !=''">
+            and b.USER_NAME like "%"#{evaluationSheetPageVO.createUser}"%"
+        </if>
+        <if test="evaluationSheetPageVO.category != null and evaluationSheetPageVO.category !=''">
+            and category = #{evaluationSheetPageVO.category}
+        </if>
+        <if test="evaluationSheetPageVO.sort != null and evaluationSheetPageVO.sort !=''">
+            and sort = #{evaluationSheetPageVO.sort}
+        </if>
+        <if test="evaluationSheetPageVO.drawTimeStart != null and evaluationSheetPageVO.drawTimeStart !=''">
+            and drawTimeStart >= #{evaluationSheetPageVO.writingBatchId}
+        </if>
+        <if test="evaluationSheetPageVO.drawTimeEnd != null and evaluationSheetPageVO.drawTimeEnd !=''">
+            and WRITING_BATCH_ID &lt;= #{evaluationSheetPageVO.writingBatchId}
+        </if>
+        <if test="evaluationSheetPageVO.drawStatus != null and evaluationSheetPageVO.drawStatus !=''">
+            and drawStatus = #{evaluationSheetPageVO.drawStatus}
+        </if>
+
+    </select>
+    <select id="writingListPage" resultType="com.tree.clouds.coordination.model.bo.WritingListBO">
+        select DISTINCT a.*
+        from evaluation_sheet a
+        left join writing_batch b on a.WRITING_BATCH_ID = b.WRITING_BATCH_ID
+        left join data_report c on b.report_ID = c.report_ID
+        where 1 = 1 and a.complete_status=1
+        <if test="writingListPageVO.year !=null and writingListPageVO.year!=''">
+            and a.year=#{writingListPageVO.year}
+        </if>
+        <if test="writingListPageVO.mount !=null and writingListPageVO.mount!=''">
+            and a.mount=#{writingListPageVO.mount}
+        </if>
+        <if test="writingListPageVO.identifiedName !=null and writingListPageVO.identifiedName!=''">
+            and c.identifiedName like "%"#{writingListPageVO.identifiedName}"%"
+        </if>
+        <if test="writingListPageVO.uploadStatus !=null and writingListPageVO.uploadStatus!=''">
+            and a.uploadStatus=#{writingListPageVO.uploadStatus}
+        </if>
+
+    </select>
+    <select id="getUserId" resultType="com.tree.clouds.coordination.model.vo.writingListUserVO">
+        select DISTINCT  c.examine_user,d.REVIEW_USER,e.APPRAISAL_REVIEW_USER_TWO from evaluation_sheet a
+            LEFT JOIN writing_batch b on a.WRITING_BATCH_ID=b.WRITING_BATCH_ID
+            LEFT JOIN data_examine c on b.report_ID=c.report_id
+            left JOIN review_signature d ON c.report_ID=d.report_id
+            left JOIN appraisal_review e ON c.report_ID=e.report_id
+            where a.WRITING_BATCH_ID=#{writingBatchId}
+    </select>
+
+</mapper>
