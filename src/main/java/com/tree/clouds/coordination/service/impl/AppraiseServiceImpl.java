@@ -51,7 +51,7 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
     public void addAppraise(AppraiseVO appraiseVO) {
         Appraise appraise = this.getById(appraiseVO.getAppraiseId());
         //修改审核进度为到复核一
-        dataReportService.updateDataExamine(Collections.singletonList(appraise.getReportId()), DataReport.EXAMINE_PROGRESS_FOUR);
+        dataReportService.updateDataExamine(Collections.singletonList(appraise.getReportId()), DataReport.EXAMINE_PROGRESS_FOUR, null);
         //更新鉴定状态
         Appraise app = BeanUtil.toBean(appraiseVO, Appraise.class);
         app.setAppralseStatus("1");

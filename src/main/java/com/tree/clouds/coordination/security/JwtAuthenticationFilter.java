@@ -64,6 +64,57 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
                 = new UsernamePasswordAuthenticationToken(userManage.getUserName(), null, userDetailService.getUserAuthority(userManage.getUserId()));
 
         SecurityContextHolder.getContext().setAuthentication(token);
+        //重新签发token
+        // 生成jwt，并放置到请求头中
+        String netToken = jwtUtils.generateToken(userManage.getAccount());
+        response.setHeader(jwtUtils.getHeader(), netToken);
         chain.doFilter(request, response);
     }
+    /**
+     * 处理token过期情况
+     *
+     * @param response
+     * @param request
+     * @param filterChain
+     * @return
+     * @throws IOException
+     */
+//    private void handleTokenExpired(HttpServletResponse response, HttpServletRequest request, FilterChain filterChain) throws IOException, ServletException {
+//        // 获取刷新 token
+//        String refreshTokenHeader = request.getHeader(jwtUtils.getHeader());
+//        // 检测 refresh-token 是否是我们系统中签发的
+////        if (!checkIsTokenAuthorizationHeader(refreshTokenHeader)) {
+////            log.debug("获取到刷新认证头:[{}]的值:[{}]但不是我们系统中登录后签发的。", tokenProperties.getRefreshHeaderName(), refreshTokenHeader);
+////            writeJson(response, "token过期了，refresh token 不是我们系统签发的");
+////            return;
+////        }
+//        // 解析 refresh-token
+//        Jws<Claims> refreshToken = JwtUtils.parserAuthenticateToken(getRealAuthorizationToken(refreshTokenHeader),
+//                tokenProperties.getSecretKey());
+//        // 判断 refresh-token 是否不合法
+//        if (null == refreshToken) {
+//            writeJson(response, "refresh token不合法");
+//            return;
+//        }
+//        // 判断 refresh-token 是否过期
+//        if (JwtUtils.isJwtExpired(refreshToken)) {
+//            writeJson(response, "refresh token 过期了");
+//            return;
+//        }
+//        // 重新签发 token
+//
+//        String newToken = JwtUtils.generatorJwtToken(
+//                refreshToken.getBody().get(tokenProperties.getUserId()),
+//                tokenProperties.getUserId(),
+//                tokenProperties.getTokenExpireSecond(),
+//                tokenProperties.getSecretKey()
+//        );
+//        response.addHeader(tokenProperties.getAuthorizationHeaderName(), newToken);
+//
+//        // 构建认证对象
+//        JwtUtils.buildAuthentication(JwtUtils.parserAuthenticateToken(newToken, tokenProperties.getSecretKey()), tokenProperties.getUserId());
+//
+//        filterChain.doFilter(request, response);
+//    }
+
 }

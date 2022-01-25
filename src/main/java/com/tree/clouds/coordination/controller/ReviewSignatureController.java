@@ -2,7 +2,7 @@ package com.tree.clouds.coordination.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.ReviewSignatureBO;
 import com.tree.clouds.coordination.model.vo.AppraisalReviewPageVO;
@@ -34,17 +34,17 @@ public class ReviewSignatureController {
     @PostMapping("/reviewSignaturePage")
     @ApiOperation(value = "认定审签分页查询")
     @Log("认定审签分页查询")
-    public Result reviewSignaturePage(@RequestBody AppraisalReviewPageVO appraisePageVO) {
+    public RestResponse<IPage<ReviewSignatureBO>> reviewSignaturePage(@RequestBody AppraisalReviewPageVO appraisePageVO) {
         IPage<ReviewSignatureBO> page = reviewSignatureService.reviewSignaturePage(appraisePageVO);
-        return Result.succ(page);
+        return RestResponse.ok(page);
     }
 
     @PostMapping("/addReviewSignature")
     @ApiOperation(value = "添加审签")
     @Log("添加审签")
-    public Result addReviewSignature(@RequestBody ReviewSignatureVO reviewSignatureVO) {
+    public RestResponse<Boolean> addReviewSignature(@RequestBody ReviewSignatureVO reviewSignatureVO) {
         reviewSignatureService.addReviewSignature(reviewSignatureVO);
-        return Result.succ(true);
+        return RestResponse.ok(true);
     }
 
 

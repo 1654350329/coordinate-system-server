@@ -45,6 +45,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     UserDetailServiceImpl userDetailService;
     @Autowired
     JwtLogoutSuccessHandler jwtLogoutSuccessHandler;
+    @Autowired
+    DecryptUsernamePasswordFilter decryptUsernamePasswordFilter;
 
     @Bean
     JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
@@ -91,7 +93,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .addFilter(jwtAuthenticationFilter())
                 .addFilterBefore(captchaFilter, UsernamePasswordAuthenticationFilter.class)
-
+                .addFilterBefore(decryptUsernamePasswordFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 
     }

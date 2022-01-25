@@ -1,9 +1,11 @@
 package com.tree.clouds.coordination.model.vo;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
+@ApiModel(value = "文件管理", description = "文件管理")
 public class FileInfoVO {
 
     @ApiModelProperty("文件存放路径")

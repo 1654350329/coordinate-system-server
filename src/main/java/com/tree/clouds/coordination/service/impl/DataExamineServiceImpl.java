@@ -13,6 +13,7 @@ import com.tree.clouds.coordination.model.vo.DataExamineVO;
 import com.tree.clouds.coordination.model.vo.DataReportPageVO;
 import com.tree.clouds.coordination.service.DataExamineService;
 import com.tree.clouds.coordination.service.DataReportService;
+import com.tree.clouds.coordination.service.UserManageService;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import com.tree.clouds.coordination.utils.LoginUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,8 @@ import java.util.Map;
 public class DataExamineServiceImpl extends ServiceImpl<DataExamineMapper, DataExamine> implements DataExamineService {
     @Autowired
     private DataReportService dataReportService;
+    @Autowired
+    private UserManageService userManageService;
 
     /**
      * 添加审核
@@ -52,13 +55,14 @@ public class DataExamineServiceImpl extends ServiceImpl<DataExamineMapper, DataE
             DataExamine dataExamine = BeanUtil.toBean(dataExamineVO, DataExamine.class);
             dataExamine.setExamineUser(LoginUserUtil.getUserId());
             dataExamine.setExamineTime(DateUtil.format(new Date(), "YYYY-MM-DD"));
+            dataExamine.setExamineStatus(1);
             this.updateById(dataExamine);
 
             DataReport dataReport = new DataReport();
             dataReport.setReportId(examine.getReportId());
-            //修改审核成功状态为到3鉴定 失败为1上报
-            if (dataExamineVO.getExamineStatus() == 0) {
-                dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_ONE);
+            //修改审核成功状态为到3鉴定 失败为0初始
+            if (dataExamineVO.getStatus() == 0) {
+                dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_ZERO);
             } else {
                 dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_THREE);
             }
@@ -69,21 +73,30 @@ public class DataExamineServiceImpl extends ServiceImpl<DataExamineMapper, DataE
     @Override
     public IPage<DataExamineBo> dataExaminePage(DataReportPageVO dataReport) {
         IPage<DataExamineBo> page = dataReport.getPage();
-        return this.baseMapper.dataExaminePage(page, dataReport);
+        page = this.baseMapper.dataExaminePage(page, dataReport);
+        for (DataExamineBo record : page.getRecords()) {
+            if (record.getCreatedUser() != null) {
+                record.setCreatedUser(userManageService.getById(record.getCreatedUser()).getUserName());
+            }
+        }
+        return page;
     }
 
     @Override
     public boolean getReportStatus(String id) {
         QueryWrapper<DataExamine> wrapper = new QueryWrapper<>();
-        wrapper.eq(DataExamine.DATA_REPORT_ID, id);
+        wrapper.eq(DataExamine.REPORT_ID, id);
         DataExamine examine = this.getOne(wrapper);
+        if (examine == null) {
+            return false;
+        }
         return examine.getExamineStatus() == 1;
     }
 
     @Override
     public void removeByReportId(String id) {
         Map<String, Object> map = new HashMap<>();
-        map.put(DataExamine.DATA_REPORT_ID, id);
+        map.put(DataExamine.REPORT_ID, id);
         this.removeByMap(map);
     }
 

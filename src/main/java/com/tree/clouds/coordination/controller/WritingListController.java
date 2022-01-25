@@ -2,9 +2,10 @@ package com.tree.clouds.coordination.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.WritingListBO;
+import com.tree.clouds.coordination.model.vo.PublicIdReqVO;
 import com.tree.clouds.coordination.model.vo.WritingListDetailVO;
 import com.tree.clouds.coordination.model.vo.WritingListPageVO;
 import com.tree.clouds.coordination.model.vo.WritingListVO;
@@ -12,7 +13,10 @@ import com.tree.clouds.coordination.service.WritingListService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
@@ -33,25 +37,25 @@ public class WritingListController {
     @PostMapping("/writingListPage")
     @ApiOperation(value = "行文名单分页")
     @Log("行文名单分页")
-    public Result writingListPage(@RequestBody WritingListPageVO writingListPageVO) {
+    public RestResponse<IPage<WritingListBO>> writingListPage(@RequestBody WritingListPageVO writingListPageVO) {
         IPage<WritingListBO> page = writingListService.writingListPage(writingListPageVO);
-        return Result.succ(page);
+        return RestResponse.ok(page);
     }
 
     @PostMapping("/writingListUpload")
     @ApiOperation(value = "上传附件")
     @Log("上传附件")
-    public Result writingListUpload(@RequestBody WritingListVO writingListVO) {
+    public RestResponse<Boolean> writingListUpload(@RequestBody WritingListVO writingListVO) {
         writingListService.writingListUpload(writingListVO);
-        return Result.succ(true);
+        return RestResponse.ok(true);
     }
 
-    @PostMapping("/writingListDetail/{writingBatchId}")
-    @ApiOperation(value = "获取详细信息")
+    @PostMapping("/writingListDetail")
+    @ApiOperation(value = "获取详细信息 传参为行文批号:writingBatchId")
     @Log("获取详细信息")
-    public Result writingListDetail(@PathVariable String writingBatchId) {
-        WritingListDetailVO writingListVO = writingListService.writingListDetail(writingBatchId);
-        return Result.succ(writingListVO);
+    public RestResponse<WritingListDetailVO> writingListDetail(@RequestBody PublicIdReqVO publicIdReqVO) {
+        WritingListDetailVO writingListVO = writingListService.writingListDetail(publicIdReqVO.getId());
+        return RestResponse.ok(writingListVO);
     }
 
 }

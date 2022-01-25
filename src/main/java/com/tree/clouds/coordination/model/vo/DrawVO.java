@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class DrawVO {
+public class DrawVO extends PageParam {
     @NotBlank(message = "行文批次号不许为空")
     @ApiModelProperty(value = "行文批次号")
     private String writingBatchId;

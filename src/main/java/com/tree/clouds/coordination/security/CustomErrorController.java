@@ -1,6 +1,6 @@
 package com.tree.clouds.coordination.security;
 
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
@@ -27,16 +27,14 @@ public class CustomErrorController implements ErrorController {
     private ErrorAttributes errorAttributes;
 
     @RequestMapping(value = PATH)
-    Result error(HttpServletRequest request, HttpServletResponse response) {
+    public RestResponse error(HttpServletRequest request, HttpServletResponse response) {
         // Appropriate HTTP response code (e.g. 404 or 500) is automatically set by Spring.
         // Here we just define response body.
         Map<String, Object> errorMap = getErrorAttributes(request);
         //定义返回格式
-        Result d = new Result();
-        d.setMsg(Objects.requireNonNull(errorMap.get("message")).toString());
-        d.setCode(Integer.parseInt(Objects.requireNonNull(errorMap.get("status")).toString()));
         response.setStatus(HttpServletResponse.SC_OK);
-        return d;
+        return RestResponse.fail(Integer.parseInt(Objects.requireNonNull(errorMap.get("status")).toString()),
+                Objects.requireNonNull(errorMap.get("message")).toString());
     }
 
     @Override

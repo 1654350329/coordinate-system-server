@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("operation_log")
-@ApiModel(value = "OperationLog对象", description = "操作日志")
+@ApiModel(value = "操作日志分页", description = "操作日志")
 public class OperationLog extends BaseEntity {
 
     public static final String OPERATION_ID = "operation_id";

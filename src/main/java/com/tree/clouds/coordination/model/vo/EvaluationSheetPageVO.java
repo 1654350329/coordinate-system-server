@@ -18,7 +18,7 @@ public class EvaluationSheetPageVO extends PageParam {
     @ApiModelProperty(value = "科別")
     private String category;
 
-    @ApiModelProperty(value = "类别1工 2病")
+    @ApiModelProperty(value = "类别0工 1病")
     private Integer sort;
 
     @ApiModelProperty(value = "抽签开始时间")

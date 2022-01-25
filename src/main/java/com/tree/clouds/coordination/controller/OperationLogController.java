@@ -2,7 +2,7 @@ package com.tree.clouds.coordination.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.entity.OperationLog;
 import com.tree.clouds.coordination.model.vo.OperationLogPageVO;
@@ -33,9 +33,9 @@ public class OperationLogController {
     @PostMapping("/operationLogPage")
     @ApiOperation(value = "操作日志分页查询")
     @Log("操作日志分页查询")
-    public Result operationLogPage(@RequestBody OperationLogPageVO operationLogPageVO) {
+    public RestResponse<IPage<OperationLog>> operationLogPage(@RequestBody OperationLogPageVO operationLogPageVO) {
         IPage<OperationLog> page = operationLogService.operationLogPage(operationLogPageVO);
-        return Result.succ(page);
+        return RestResponse.ok(page);
     }
 }
 

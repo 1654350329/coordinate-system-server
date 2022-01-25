@@ -20,10 +20,10 @@ public interface RoleManageService extends IService<RoleManage> {
     /**
      * 根据角色获取用户信息
      *
-     * @param roleId
+     * @param roleName
      * @return
      */
-    List<UserManage> getUserInfoByRole(String roleId);
+    List<UserManage> getUserInfoByRole(String roleName);
 
     IPage<RoleManage> roleManagePage(RoleManagePageVO roleManagePageVO);
 }

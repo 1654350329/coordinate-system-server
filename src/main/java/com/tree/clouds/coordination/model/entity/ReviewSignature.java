@@ -62,6 +62,10 @@ public class ReviewSignature extends BaseEntity implements Serializable {
     @TableField(REVIEW_RESULT)
     private String reviewResult;
 
+    @ApiModelProperty(value = "审签意见")
+    @TableField("remark")
+    private String remark;
+
     @ApiModelProperty(value = "审签人")
     @TableField(REVIEW_USER)
     private String reviewUser;

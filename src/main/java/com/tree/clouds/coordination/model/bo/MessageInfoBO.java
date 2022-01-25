@@ -1,10 +1,12 @@
 package com.tree.clouds.coordination.model.bo;
 
 import com.tree.clouds.coordination.model.entity.DataReport;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
+@ApiModel(value = "结论送达分页", description = "结论送达分页")
 public class MessageInfoBO extends DataReport {
     @ApiModelProperty(value = "主键")
     private String messageId;

@@ -2,7 +2,7 @@ package com.tree.clouds.coordination.controller;
 
 
 import cn.hutool.core.util.ObjectUtil;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.vo.FileInfoVO;
 import com.tree.clouds.coordination.model.vo.PublicIdsReqVO;
@@ -41,12 +41,12 @@ public class FileInfoController {
     @PostMapping("/upload-image")
     @ApiOperation(value = "图片上传")
     @Log("图片上传")
-    public Result uploadImage(@RequestParam("file") MultipartFile file) {
+    public RestResponse<FileInfoVO> uploadImage(@RequestParam("file") MultipartFile file) {
         FileInfoVO fileInfo = this.fileInfoService.upload(file);
         if (ObjectUtil.isEmpty(fileInfo)) {
-            return Result.fail("只允许图片上传!");
+            return RestResponse.fail(400, "只允许图片上传!");
         }
-        return Result.succ(fileInfo);
+        return RestResponse.ok(fileInfo);
     }
 //    @ApiOperation(value = "验证文件是否上传")
 //    @PostMapping(value = "/exist")
@@ -64,8 +64,11 @@ public class FileInfoController {
     @ApiOperation(value = "删除文件")
     @PostMapping(value = "/delete", name = "删除文件")
     @Log("删除文件")
-    public Result delete(@RequestBody @Validated PublicIdsReqVO publicIdsReqVO) {
-        return Result.succ(fileInfoService.deleteByBizIds(publicIdsReqVO.getIds()));
+    public RestResponse<Boolean> delete(@RequestBody @Validated PublicIdsReqVO publicIdsReqVO) {
+        for (String id : publicIdsReqVO.getIds()) {
+            fileInfoService.deleteByBizId(id);
+        }
+        return RestResponse.ok(true);
     }
 
     @ApiOperation(value = "预览文件")

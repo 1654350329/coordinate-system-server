@@ -21,10 +21,10 @@ public interface RoleUserMapper extends BaseMapper<RoleUser> {
     /**
      * 根据角色获取用户信息
      *
-     * @param roleId
+     * @param roleName
      * @return
      */
-    List<UserManage> getUserInfoByRole(@Param("roleId") String roleId);
+    List<UserManage> getUserInfoByRole(@Param("roleName") String roleName);
 
     List<RoleManage> getRoleByUserId(@Param("userId") String userId);
 }

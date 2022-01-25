@@ -156,6 +156,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
             List<SysMenu> menus = this.sysMenuService.listByIds(menuIds);
             String perms = menus.stream().map(SysMenu::getPerms).collect(Collectors.joining(","));
             authority = authority.concat(",").concat(perms);
+            redisUtil.set("GrantedAuthority:" + userId, authority, 60 * 60);
         }
         return authority;
     }

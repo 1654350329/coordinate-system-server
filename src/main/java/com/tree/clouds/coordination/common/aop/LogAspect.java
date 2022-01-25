@@ -89,19 +89,25 @@ public class LogAspect {
         writeContent(errorMsg);
     }
 
+    @AfterThrowing(pointcut = "pointcut()", throwing = "e")
+    public void handleThrowing(Exception e) {
+        String errorMsg = StrUtil.isEmpty(e.getMessage()) ? "系统异常" : e.getMessage();
+        writeContent(errorMsg);
+    }
+
     /**
      * 将内容输出到浏览器
      *
      * @param content 输出内容
      */
     private void writeContent(String content) {
-        HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
-        response.reset();
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Content-Type", "text/plain;charset=UTF-8");
-        response.setHeader("icop-content-type", "exception");
         PrintWriter writer = null;
         try {
+            HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
+            response.reset();
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Type", "text/plain;charset=UTF-8");
+            response.setHeader("icop-content-type", "exception");
             writer = response.getWriter();
         } catch (IOException e) {
             e.printStackTrace();

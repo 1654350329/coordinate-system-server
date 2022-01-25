@@ -22,7 +22,7 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("role_manage")
-@ApiModel(value = "RoleManage对象", description = "角色管理表")
+@ApiModel(value = "角色管理分页", description = "角色管理分页")
 public class RoleManage extends BaseEntity implements Serializable {
 
     public static final String ROLE_ID = "ROLE_ID";

@@ -2,7 +2,7 @@ package com.tree.clouds.coordination.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.entity.LoginLog;
 import com.tree.clouds.coordination.model.vo.LoginLogPageVO;
@@ -33,9 +33,9 @@ public class LoginLogController {
     @PostMapping("/loginLogPage")
     @ApiOperation(value = "登入日志分页查询")
     @Log("登入日志分页查询")
-    public Result loginLogPage(@RequestBody LoginLogPageVO loginLogPageVO) {
+    public RestResponse<IPage<LoginLog>> loginLogPage(@RequestBody LoginLogPageVO loginLogPageVO) {
         IPage<LoginLog> page = loginLogService.loginLogPage(loginLogPageVO);
-        return Result.succ(page);
+        return RestResponse.ok(page);
     }
 
 }

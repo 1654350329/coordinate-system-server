@@ -29,8 +29,9 @@
         PHONE_NUMBER, ADDRESS, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="selectDataReport" resultType="com.tree.clouds.coordination.model.bo.DataReportBO">
-        select a.* ,b.REVIEW_AND_SIGNATURE_ID from data_report a
+        select a.* ,c.FILE_PATH as REVIEW_AND_SIGNATURE_ID from data_report a
         left join review_signature b on a.report_id=b.report_id
+        left join file_info c on b.REVIEW_AND_SIGNATURE_ID=c.biz_id
         where 1=1 and a.del=0
         <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
             and a.IDENTIFIED_NUMBER=#{dataReportPageVO.identifiedName}
@@ -63,7 +64,7 @@
             and a.RECEIVING_TIME &lt;= #{dataReportPageVO.receivingTimeStart}
         </if>
         <if test="dataReportPageVO.receivingTimeEnd != null and dataReportPageVO.receivingTimeEnd != ''">
-            and REPORT_ID >= #{dataReportPageVO.receivingTimeEnd}
+            and a.RECEIVING_TIME >= #{dataReportPageVO.receivingTimeEnd}
         </if>
     </select>
     <select id="getDetailInfo" resultType="com.tree.clouds.coordination.model.bo.ReportDetailInfoBO">

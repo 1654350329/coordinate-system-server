@@ -28,8 +28,8 @@ public class RoleManageServiceImpl extends ServiceImpl<RoleManageMapper, RoleMan
     private RoleUserMapper roleUserMapper;
 
     @Override
-    public List<UserManage> getUserInfoByRole(String roleId) {
-        return roleUserMapper.getUserInfoByRole(roleId);
+    public List<UserManage> getUserInfoByRole(String roleName) {
+        return roleUserMapper.getUserInfoByRole(roleName);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.tree.clouds.coordination.common.exception;
 
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -31,8 +31,8 @@ public class RestExceptionHandler {
      * @return ErrorInfo
      */
     @ExceptionHandler({InvocationTargetException.class})
-    public Result businessExceptionHandler(HttpServletRequest request, InvocationTargetException e) throws BaseBusinessException {
-        return Result.fail(e.getMessage());
+    public RestResponse businessExceptionHandler(HttpServletRequest request, InvocationTargetException e) throws BaseBusinessException {
+        return RestResponse.fail(e.getMessage());
     }
 
     /**
@@ -42,16 +42,16 @@ public class RestExceptionHandler {
      * @return ErrorInfo
      */
     @ExceptionHandler({AccessDeniedException.class})
-    public Result accessDeniedExceptionHandler(HttpServletRequest request, AccessDeniedException e) throws BaseBusinessException {
-        return Result.fail(401, e.getMessage(), null);
+    public RestResponse accessDeniedExceptionHandler(HttpServletRequest request, AccessDeniedException e) throws BaseBusinessException {
+        return RestResponse.fail(401, e.getMessage());
     }
 
     // 实体校验异常捕获
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public Result handler(MethodArgumentNotValidException e) {
+    public RestResponse handler(MethodArgumentNotValidException e) {
         BindingResult result = e.getBindingResult();
         ObjectError objectError = result.getAllErrors().stream().findFirst().get();
-        return Result.fail(objectError.getDefaultMessage());
+        return RestResponse.fail(objectError.getDefaultMessage());
     }
 
     /**
@@ -65,13 +65,13 @@ public class RestExceptionHandler {
      * @throws Exception
      */
     @ExceptionHandler(value = Exception.class)
-    public Result handleException(HttpServletRequest request, Exception e) throws Exception {
-        return Result.fail(500, e.getMessage(), null);
+    public RestResponse handleException(HttpServletRequest request, Exception e) throws Exception {
+        return RestResponse.fail(500, e.getMessage());
     }
 
     @ExceptionHandler(value = Throwable.class)
-    public Result Throwable(HttpServletRequest request, Throwable e) throws Exception {
-        return Result.fail(500, e.getMessage(), null);
+    public RestResponse Throwable(HttpServletRequest request, Throwable e) throws Exception {
+        return RestResponse.fail(500, e.getMessage());
     }
 
 

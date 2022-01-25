@@ -1,7 +1,7 @@
 package com.tree.clouds.coordination.security;
 
 import cn.hutool.json.JSONUtil;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.model.entity.LoginLog;
 import com.tree.clouds.coordination.service.LoginLogService;
 import com.tree.clouds.coordination.utils.JwtUtils;
@@ -14,6 +14,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -38,8 +40,9 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         // 生成jwt，并放置到请求头中
         String jwt = jwtUtils.generateToken(authentication.getName());
         response.setHeader(jwtUtils.getHeader(), jwt);
-
-        Result result = Result.succ("");
+        Map<String, Object> map = new HashMap<>();
+        map.put(jwtUtils.getHeader(), jwt);
+        RestResponse result = RestResponse.ok(map);
 
         outputStream.write(JSONUtil.toJsonStr(result).getBytes("UTF-8"));
 

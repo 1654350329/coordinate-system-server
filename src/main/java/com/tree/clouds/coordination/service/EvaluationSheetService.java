@@ -39,7 +39,7 @@ public interface EvaluationSheetService extends IService<EvaluationSheet> {
      * @param drawVO
      * @return
      */
-    List<ExpertVO> draw(DrawVO drawVO);
+    IPage<ExpertVO> draw(DrawVO drawVO);
 
     /**
      * 重置抽签

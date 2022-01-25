@@ -22,7 +22,6 @@ public interface DataReportMapper extends BaseMapper<DataReport> {
 
     IPage<DataReportBO> selectDataReport(IPage<DataReportBO> page, @Param("dataReportPageVO") DataReportPageVO dataReportPageVO);
 
-    ;
 
     List<ReportDetailInfoBO> getDetailInfo(@Param("reports") List<String> reports);
 }

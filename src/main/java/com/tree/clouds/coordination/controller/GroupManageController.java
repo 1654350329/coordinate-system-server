@@ -2,15 +2,20 @@ package com.tree.clouds.coordination.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.entity.GroupManage;
 import com.tree.clouds.coordination.model.vo.GroupManagePageVO;
+import com.tree.clouds.coordination.model.vo.PublicIdReqVO;
 import com.tree.clouds.coordination.service.GroupManageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
@@ -31,33 +36,33 @@ public class GroupManageController {
     @PostMapping("/groupManagePage")
     @ApiOperation(value = "分组管理模块分页查询")
     @Log("分组管理模块分页查询")
-    public Result groupManagePage(@RequestBody GroupManagePageVO groupManagePageVO) {
+    public RestResponse<IPage<GroupManage>> groupManagePage(@RequestBody GroupManagePageVO groupManagePageVO) {
         IPage<GroupManage> page = groupManageService.groupManagePage(groupManagePageVO);
-        return Result.succ(page);
+        return RestResponse.ok(page);
     }
 
     @PostMapping("/addGroupRole")
     @ApiOperation(value = "添加分组")
     @Log("添加分组")
-    public Result addGroupRole(@RequestBody GroupManage groupRole) {
+    public RestResponse<Boolean> addGroupRole(@RequestBody GroupManage groupRole) {
         groupManageService.save(groupRole);
-        return Result.succ(true);
+        return RestResponse.ok(true);
     }
 
     @PostMapping("/updateGroupRole")
     @ApiOperation(value = "修改分组")
     @Log("修改分组")
-    public Result updateGroupRole(@RequestBody GroupManage groupRole) {
+    public RestResponse<Boolean> updateGroupRole(@RequestBody GroupManage groupRole) {
         groupManageService.updateById(groupRole);
-        return Result.succ(true);
+        return RestResponse.ok(true);
     }
 
-    @PostMapping("/deleteGroupRole/{groupId}")
+    @PostMapping("/deleteGroupRole")
     @ApiOperation(value = "刪除分组")
     @Log("刪除分组")
-    public Result deleteGroupRole(@PathVariable String groupId) {
-        groupManageService.removeById(groupId);
-        return Result.succ(true);
+    public RestResponse<Boolean> deleteGroupRole(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
+        groupManageService.removeById(publicIdReqVO.getId());
+        return RestResponse.ok(true);
     }
 }
 

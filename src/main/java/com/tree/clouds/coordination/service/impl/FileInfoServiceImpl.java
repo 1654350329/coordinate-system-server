@@ -93,8 +93,9 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         return this.baseMapper.exist(md5);
     }
 
-    public boolean deleteByBizIds(List<String> ids) {
-        return this.removeByIds(ids);
+    public boolean deleteByBizId(String id) {
+        this.baseMapper.deleteByBizIds(id);
+        return true;
     }
 
     @Override

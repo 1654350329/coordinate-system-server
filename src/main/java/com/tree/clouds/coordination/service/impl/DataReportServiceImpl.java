@@ -1,6 +1,7 @@
 package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.IdcardUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.DataReportMapper;
@@ -19,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.beans.Transient;
-import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -38,11 +39,19 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
     private FileInfoService fileInfoService;
     @Autowired
     private DataExamineService dataExamineService;
+    //手机号码正则匹配
+    private static final String REGEX_MOBILE = "((\\+86|0086)?\\s*)((134[0-8]\\d{7})|(((13([0-3]|[5-9]))|(14[5-9])|15([0-3]|[5-9])|(16(2|[5-7]))|17([0-3]|[5-8])|18[0-9]|19(1|[8-9]))\\d{8})|(14(0|1|4)0\\d{7})|(1740([0-5]|[6-9]|[10-12])\\d{7}))";
 
     @Transient
     public void addDataReport(UpdateDataReportVO updateDataReportVO) {
+        if (!Pattern.matches(REGEX_MOBILE, updateDataReportVO.getPhoneNumber())) {
+            throw new BaseBusinessException(400, "手机号码不合法");
+        }
+        if (!IdcardUtil.isValidCard(updateDataReportVO.getIdCart())) {
+            throw new BaseBusinessException(400, "身份证不合法");
+        }
         DataReport dataReport = BeanUtil.toBean(updateDataReportVO, DataReport.class);
-        dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_ONE);
+        dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_ZERO);
         this.save(dataReport);
         fileInfoService.saveFileInfo(updateDataReportVO.getBizFile(), dataReport.getReportId());
     }
@@ -55,14 +64,14 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         DataReport dataReport = BeanUtil.toBean(updateDataReportVO, DataReport.class);
         dataReport.setExamineProgress(0);
         this.updateById(dataReport);
-        fileInfoService.deleteByBizIds(Collections.singletonList(dataReport.getReportId()));
+        fileInfoService.deleteByBizId(dataReport.getReportId());
         fileInfoService.saveFileInfo(updateDataReportVO.getBizFile(), dataReport.getReportId());
     }
 
     @Transient
     public void deleteDataReport(String id) {
         this.removeById(id);
-        fileInfoService.deleteByBizIds(Collections.singletonList(id));
+        fileInfoService.deleteByBizId(id);
     }
 
     public IPage<DataReportBO> dataReportPage(DataReportPageVO dataReportPageVO) {
@@ -77,18 +86,20 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
      * @param progressStatus 审核进度状态
      */
     @Override
-    public void updateDataExamine(List<String> reportIds, int progressStatus) {
+    public void updateDataExamine(List<String> reportIds, int progressStatus, String remark) {
         if (progressStatus == DataReport.EXAMINE_PROGRESS_ZERO) {
             for (String reportId : reportIds) {
                 //修改原有的上报资料状态并作废
                 DataReport report = this.getById(reportId);
                 report.setDel(1);
                 report.setStatus(1);
-                report.setExamineProgress(0);
+                report.setRemark(remark);
+                report.setLink(report.getExamineProgress());
                 this.updateById(report);
                 //重新生成新的上报资料
                 report.setReportId(null);
                 report.setDel(0);
+                report.setExamineProgress(0);
                 this.save(report);
             }
         } else {
@@ -115,7 +126,7 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
 
     @Override
     public void report(List<String> ids) {
-        updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_ONE);
+        updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_ONE, null);
         for (String id : ids) {
             DataExamine dataExamine = new DataExamine();
             dataExamine.setReportId(id);

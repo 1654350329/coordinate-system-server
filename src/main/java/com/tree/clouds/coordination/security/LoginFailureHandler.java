@@ -1,7 +1,7 @@
 package com.tree.clouds.coordination.security;
 
 import cn.hutool.json.JSONUtil;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.model.entity.LoginLog;
 import com.tree.clouds.coordination.service.LoginLogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         loginLogService.save(loginLog);
         response.setContentType("application/json;charset=UTF-8");
         ServletOutputStream outputStream = response.getOutputStream();
-        Result result = Result.fail(exception.getMessage());
+        RestResponse result = RestResponse.fail(exception.getMessage());
         if ("Bad credentials".equals(exception.getMessage())) {
             result.setMsg("密码错误,请重新输入!");
         }

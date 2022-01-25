@@ -1,7 +1,7 @@
 package com.tree.clouds.coordination.security;
 
 import cn.hutool.json.JSONUtil;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.service.LoginLogService;
 import com.tree.clouds.coordination.utils.JwtUtils;
 import com.tree.clouds.coordination.utils.LoginUserUtil;
@@ -37,7 +37,7 @@ public class JwtLogoutSuccessHandler implements LogoutSuccessHandler {
 
         response.setHeader(jwtUtils.getHeader(), "");
 
-        Result result = Result.succ("");
+        RestResponse result = RestResponse.ok("");
 
         outputStream.write(JSONUtil.toJsonStr(result).getBytes("UTF-8"));
 

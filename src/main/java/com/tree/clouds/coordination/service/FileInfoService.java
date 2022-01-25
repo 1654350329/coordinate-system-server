@@ -22,7 +22,7 @@ public interface FileInfoService extends IService<FileInfo> {
 
     FileInfoVO upload(MultipartFile file);
 
-    boolean deleteByBizIds(List<String> ids);
+    boolean deleteByBizId(String id);
 
     /**
      * 根据业务id和文件类型获取文件信息

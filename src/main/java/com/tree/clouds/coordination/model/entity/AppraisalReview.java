@@ -54,6 +54,10 @@ public class AppraisalReview extends BaseEntity implements Serializable {
     @TableField(APPRAISAL_REVIEW_STATUS)
     private Integer appraisalReviewStatus;
 
+    @ApiModelProperty(value = "复核意见")
+    @TableField("remark")
+    private String remark;
+
     @ApiModelProperty(value = "二核结果")
     @TableField("APPRAISAL_REVIEW_RESULT_TWO")
     private Integer appraisalReviewResultTwo;
@@ -77,5 +81,6 @@ public class AppraisalReview extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "复核人2")
     @TableField(APPRAISAL_REVIEW_USER_TWO)
     private String appraisalReviewUserTwo;
+
 
 }

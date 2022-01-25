@@ -2,7 +2,7 @@ package com.tree.clouds.coordination.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.DataExamineBo;
 import com.tree.clouds.coordination.model.vo.DataExamineVO;
@@ -38,18 +38,18 @@ public class DataExamineController {
     @PostMapping("/addDataExamine")
     @ApiOperation("审核资料可批量审核")
     @PreAuthorize("hasAuthority('data:examine:examine')")
-    public Result addDataExamine(@RequestBody List<DataExamineVO> dataExamineVOS) {
+    public RestResponse<Boolean> addDataExamine(@RequestBody List<DataExamineVO> dataExamineVOS) {
         dataExamineService.addDataExamine(dataExamineVOS);
-        return Result.succ(true);
+        return RestResponse.ok(true);
     }
 
     @Log("资料初审分页查询")
     @PostMapping("/dataExaminePage")
     @ApiOperation(value = "资料初审分页查询")
     @PreAuthorize("hasAuthority('data:examine:list')")
-    public Result dataReportPage(@RequestBody DataReportPageVO dataReport) {
+    public RestResponse<IPage<DataExamineBo>> dataReportPage(@RequestBody DataReportPageVO dataReport) {
         IPage<DataExamineBo> page = dataExamineService.dataExaminePage(dataReport);
-        return Result.succ(page);
+        return RestResponse.ok(page);
     }
 }
 

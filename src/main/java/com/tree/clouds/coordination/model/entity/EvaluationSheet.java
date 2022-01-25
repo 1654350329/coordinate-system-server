@@ -22,7 +22,7 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("evaluation_sheet")
-@ApiModel(value = "EvaluationSheet对象", description = "评估表")
+@ApiModel(value = "认定评估分页", description = "评估表")
 public class EvaluationSheet extends BaseEntity implements Serializable {
 
     public static final String EVALUATION_ID = "EVALUATION_ID";
@@ -57,7 +57,7 @@ public class EvaluationSheet extends BaseEntity implements Serializable {
     @TableField(MONTH)
     private Integer month;
 
-    @ApiModelProperty(value = "类别1工 2病")
+    @ApiModelProperty(value = "类别0工 1病")
     @TableField(SORT)
     private Integer sort;
 
@@ -97,8 +97,8 @@ public class EvaluationSheet extends BaseEntity implements Serializable {
     @TableField(COMPLETE_STATUS)
     private int completeStatus;
 
-    @ApiModelProperty(value = "附件状态")
+    @ApiModelProperty(value = "附件状态 0未上传 1已上传")
     @TableField(UPLOAD_STATUS)
-    private String uploadStatus;
+    private int uploadStatus;
 
 }

@@ -24,7 +24,7 @@ import lombok.EqualsAndHashCode;
 public class DataExamine extends BaseEntity {
 
     public static final String DATA_EXAMINE_ID = "Data_examine_ID";
-    public static final String DATA_REPORT_ID = "data_report_id";
+    public static final String REPORT_ID = "report_id";
     public static final String EXAMINE_STATUS = "examine_status";
     public static final String EXAMINE_DESCRIBE = "examine_describe";
     public static final String EXAMINE_TIME = "examine_time";
@@ -38,7 +38,7 @@ public class DataExamine extends BaseEntity {
     @TableField("report_id")
     private String reportId;
 
-    @ApiModelProperty(value = "审核状态")
+    @ApiModelProperty(value = "审核状态 0未审核 1 已审核")
     @TableField("examine_status")
     private int examineStatus;
 

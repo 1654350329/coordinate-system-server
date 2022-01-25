@@ -3,11 +3,12 @@ package com.tree.clouds.coordination.controller;
 
 import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.model.bo.SysMenuDto;
 import com.tree.clouds.coordination.model.entity.SysMenu;
 import com.tree.clouds.coordination.model.entity.SysRoleMenu;
 import com.tree.clouds.coordination.model.entity.UserManage;
+import com.tree.clouds.coordination.model.vo.PublicIdReqVO;
 import com.tree.clouds.coordination.service.SysMenuService;
 import com.tree.clouds.coordination.service.SysRoleMenuService;
 import com.tree.clouds.coordination.service.UserManageService;
@@ -21,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -45,7 +47,7 @@ public class SysMenuController {
 
     @GetMapping("/nav")
     @ApiOperation(value = "当前用户的菜单和权限信息")
-    public Result nav() {
+    public RestResponse<Map> nav() {
 
         UserManage userByAccount = userManageService.getUserByAccount(LoginUserUtil.getUserAccount());
 
@@ -56,7 +58,7 @@ public class SysMenuController {
         // 获取导航栏信息
         List<SysMenuDto> navs = sysMenuService.getCurrentUserNav();
 
-        return Result.succ(MapUtil.builder()
+        return RestResponse.ok(MapUtil.builder()
                 .put("authoritys", authorityInfoArray)
                 .put("nav", navs)
                 .map()
@@ -66,58 +68,54 @@ public class SysMenuController {
     @GetMapping("/info/{id}")
 //    @PreAuthorize("hasAuthority('sys:menu:list')")
     @ApiOperation(value = "菜单信息")
-    public Result info(@PathVariable(name = "id") Long id) {
-        return Result.succ(sysMenuService.getById(id));
+    public RestResponse<SysMenu> info(@PathVariable(name = "id") Long id) {
+        return RestResponse.ok(sysMenuService.getById(id));
     }
 
     @GetMapping("/list")
 //    @PreAuthorize("hasAuthority('sys:menu:list')")
     @ApiOperation(value = "菜单树")
-    public Result list() {
-
+    public RestResponse<List<SysMenu>> list() {
         List<SysMenu> menus = sysMenuService.tree();
-        return Result.succ(menus);
+        return RestResponse.ok(menus);
     }
 
     @PostMapping("/save")
     @PreAuthorize("hasAuthority('sys:menu:save')")
     @ApiOperation(value = "菜单保存")
-    public Result save(@Validated @RequestBody SysMenu sysMenu) {
-
-//        sysMenu.setCreated(LocalDateTime.now());
-
+    public RestResponse<SysMenu> save(@Validated @RequestBody SysMenu sysMenu) {
         sysMenuService.save(sysMenu);
-        return Result.succ(sysMenu);
+        return RestResponse.ok(sysMenu);
     }
 
     @PostMapping("/update")
     @PreAuthorize("hasAuthority('sys:menu:update')")
     @ApiOperation(value = "菜单更新")
-    public Result update(@Validated @RequestBody SysMenu sysMenu) {
+    public RestResponse<SysMenu> update(@Validated @RequestBody SysMenu sysMenu) {
         sysMenuService.updateById(sysMenu);
 
         // 清除所有与该菜单相关的权限缓存
         userManageService.clearUserAuthorityInfoByMenuId(sysMenu.getId());
-        return Result.succ(sysMenu);
+        return RestResponse.ok(sysMenu);
     }
 
-    @PostMapping("/delete/{id}")
+    @PostMapping("/delete")
     @PreAuthorize("hasAuthority('sys:menu:delete')")
     @ApiOperation(value = "菜单删除")
-    public Result delete(@PathVariable("id") Long id) {
+    public RestResponse<Boolean> delete(@RequestBody PublicIdReqVO publicIdReqVO) {
 
-        int count = sysMenuService.count(new QueryWrapper<SysMenu>().eq("parent_id", id));
+        int count = sysMenuService.count(new QueryWrapper<SysMenu>().eq("parent_id", publicIdReqVO.getId()));
         if (count > 0) {
-            return Result.fail("请先删除子菜单");
+            return RestResponse.fail(400, "请先删除子菜单");
         }
 
         // 清除所有与该菜单相关的权限缓存
-        userManageService.clearUserAuthorityInfoByMenuId(id);
+        userManageService.clearUserAuthorityInfoByMenuId(Long.parseLong(publicIdReqVO.getId()));
 
-        sysMenuService.removeById(id);
+        sysMenuService.removeById(publicIdReqVO.getId());
 
         // 同步删除中间关联表
-        sysRoleMenuService.remove(new QueryWrapper<SysRoleMenu>().eq("menu_id", id));
-        return Result.succ("");
+        sysRoleMenuService.remove(new QueryWrapper<SysRoleMenu>().eq("menu_id", publicIdReqVO.getId()));
+        return RestResponse.ok(true);
     }
 }

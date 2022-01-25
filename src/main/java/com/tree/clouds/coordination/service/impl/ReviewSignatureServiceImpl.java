@@ -10,12 +10,10 @@ import com.tree.clouds.coordination.model.bo.WritingResultBO;
 import com.tree.clouds.coordination.model.entity.DataReport;
 import com.tree.clouds.coordination.model.entity.ReviewSignature;
 import com.tree.clouds.coordination.model.vo.AppraisalReviewPageVO;
-import com.tree.clouds.coordination.model.vo.FileInfoVO;
 import com.tree.clouds.coordination.model.vo.ReviewSignatureVO;
 import com.tree.clouds.coordination.model.vo.WritingResultPageVO;
 import com.tree.clouds.coordination.service.DataReportService;
 import com.tree.clouds.coordination.service.EvaluationSheetService;
-import com.tree.clouds.coordination.service.FileInfoService;
 import com.tree.clouds.coordination.service.ReviewSignatureService;
 import com.tree.clouds.coordination.utils.LoginUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +33,6 @@ import java.util.Collections;
 @Service
 public class ReviewSignatureServiceImpl extends ServiceImpl<ReviewSignatureMapper, ReviewSignature> implements ReviewSignatureService {
     @Autowired
-    private FileInfoService fileInfoService;
-    @Autowired
     private DataReportService dataReportService;
     @Autowired
     private EvaluationSheetService evaluationSheetService;
@@ -45,7 +41,6 @@ public class ReviewSignatureServiceImpl extends ServiceImpl<ReviewSignatureMappe
     public IPage<ReviewSignatureBO> reviewSignaturePage(AppraisalReviewPageVO appraisePageVO) {
         IPage<ReviewSignatureBO> page = appraisePageVO.getPage();
         return this.baseMapper.reviewSignaturePage(page, appraisePageVO);
-
     }
 
     @Override
@@ -56,23 +51,20 @@ public class ReviewSignatureServiceImpl extends ServiceImpl<ReviewSignatureMappe
         reviewSignature.setReviewUser(LoginUserUtil.getUserId());
         if (reviewSignatureVO.getReviewResult().equals("1")) {
             //审核进度完成
-            dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_SEVEN);
-            reviewSignature.setReviewResult("同意");
-            reviewSignature.setReviewStatus("已审签");
+            dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_SEVEN, null);
+            reviewSignature.setReviewResult("1");
+            reviewSignature.setReviewStatus("1");
             if (evaluationSheetService.isCompleteStatus(signature.getWritingBatchId())) {
                 evaluationSheetService.updateCompleteStatus(signature.getWritingBatchId());
             }
         } else {
             //审核进度失败驳回
-            dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO);
-            reviewSignature.setReviewResult("驳回");
-            reviewSignature.setReviewStatus("已审签");
+            dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, reviewSignatureVO.getRemark());
+            reviewSignature.setReviewResult("0");
+            reviewSignature.setReviewStatus("1");
+            reviewSignature.setRemark(reviewSignatureVO.getRemark());
         }
         this.updateById(reviewSignature);
-        fileInfoService.deleteByBizIds(Collections.singletonList(signature.getReviewAndSignatureId()));
-        FileInfoVO fileInfoVO = reviewSignatureVO.getFileInfoVO();
-        fileInfoVO.setType("4");
-        fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), reviewSignature.getReviewAndSignatureId());
         return true;
     }
 

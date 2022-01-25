@@ -9,7 +9,7 @@ public class DataExamineVO {
     private String dataExamineId;
 
     @ApiModelProperty(value = "审核状态 0失败 1成功")
-    private int examineStatus;
+    private int status;
 
     @ApiModelProperty(value = "审核描述")
     private String examineDescribe;

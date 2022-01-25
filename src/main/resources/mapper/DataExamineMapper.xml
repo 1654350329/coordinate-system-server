@@ -21,9 +21,10 @@
         Data_examine_ID, data_report_id, examine_status, examine_describe, examine_time, examine_user, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME
     </sql>
     <select id="dataExaminePage" resultType="com.tree.clouds.coordination.model.bo.DataExamineBo">
-        select a.Data_examine_ID,a.examine_time,a.examine_user, b.*
+        select a.Data_examine_ID,a.examine_time,c.user_name as examine_user, b.*
         from data_examine a
-        LEFT JOIN data_report b on a.report_ID=b.REPORT_ID
+        LEFT JOIN data_report b on a.report_ID = b.REPORT_ID
+        LEFT JOIN user_manage c on c.user_id = a.examine_user
         where 1=1
         <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
             and b.IDENTIFIED_NUMBER=#{dataReportPageVO.identifiedName}
@@ -46,20 +47,29 @@
         <if test="dataReportPageVO.taskType != null and dataReportPageVO.taskType != ''">
             and b.TASK_TYPE=#{dataReportPageVO.taskType}
         </if>
-        <if test="dataReportPageVO.examineStatus != null and dataReportPageVO.examineStatus != ''">
-            and b.EXAMINE_STATUS =#{dataReportPageVO.examineStatus}
+        <if test="dataReportPageVO.examineStatus != null and dataReportPageVO.examineStatus != 2">
+            and a.EXAMINE_STATUS =#{dataReportPageVO.examineStatus}
+        </if>
+        <if test="dataReportPageVO.examineStatus != null and dataReportPageVO.examineStatus == 2">
+            and (a.EXAMINE_STATUS =0 or a.EXAMINE_STATUS =1)
+        </if>
+        <if test="dataReportPageVO.status != null and dataReportPageVO.status != ''">
+            and b.STATUS =#{dataReportPageVO.status}
         </if>
         <if test="dataReportPageVO.examineProgress != null">
             and b.EXAMINE_PROGRESS =#{dataReportPageVO.examineProgress}
-        </if>
-        <if test="dataReportPageVO.examineProgress == null or dataReportPageVO.examineProgress == 0">
-            and b.EXAMINE_PROGRESS &lt; 3
         </if>
         <if test="dataReportPageVO.receivingTimeStart != null and dataReportPageVO.receivingTimeStart != ''">
             and b.RECEIVING_TIME &lt;= #{dataReportPageVO.receivingTimeStart}
         </if>
         <if test="dataReportPageVO.receivingTimeEnd != null and dataReportPageVO.receivingTimeEnd != ''">
-            and REPORT_ID >= #{dataReportPageVO.receivingTimeEnd}
+            and b.RECEIVING_TIME >= #{dataReportPageVO.receivingTimeEnd}
+        </if>
+        <if test="dataReportPageVO.reportTimeStart != null and dataReportPageVO.reportTimeStart != ''">
+            and a.created_time &lt;= #{dataReportPageVO.receivingTimeStart}
+        </if>
+        <if test="dataReportPageVO.reportTimeEnd != null and dataReportPageVO.reportTimeEnd != ''">
+            and b.created_time >= #{dataReportPageVO.receivingTimeEnd}
         </if>
     </select>
 

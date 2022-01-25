@@ -1,7 +1,7 @@
 package com.tree.clouds.coordination.security;
 
 import cn.hutool.json.JSONUtil;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -18,15 +18,15 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
 
-		response.setContentType("application/json;charset=UTF-8");
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		ServletOutputStream outputStream = response.getOutputStream();
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        ServletOutputStream outputStream = response.getOutputStream();
 
-		Result result = Result.fail("请先登录");
+        RestResponse result = RestResponse.fail("请先登录");
 
-		outputStream.write(JSONUtil.toJsonStr(result).getBytes("UTF-8"));
+        outputStream.write(JSONUtil.toJsonStr(result).getBytes("UTF-8"));
 
-		outputStream.flush();
-		outputStream.close();
-	}
+        outputStream.flush();
+        outputStream.close();
+    }
 }

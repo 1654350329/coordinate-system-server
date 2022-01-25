@@ -10,8 +10,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.deepoove.poi.XWPFTemplate;
 import com.deepoove.poi.config.Configure;
 import com.deepoove.poi.policy.HackLoopTableRenderPolicy;
-import com.github.tobato.fastdfs.domain.StorePath;
-import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.mapper.EvaluationSheetDetailMapper;
 import com.tree.clouds.coordination.mapper.EvaluationSheetMapper;
@@ -20,13 +18,13 @@ import com.tree.clouds.coordination.model.entity.*;
 import com.tree.clouds.coordination.model.vo.*;
 import com.tree.clouds.coordination.service.*;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
+import com.tree.clouds.coordination.utils.QiniuUtil;
 import com.tree.clouds.coordination.utils.SmsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.Transient;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -65,9 +63,6 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     @Autowired
     private FileInfoService fileInfoService;
 
-    @Autowired
-    private FastFileStorageClient storageClient;
-
     @Override
     @Transient
     public void addEvaluationSheet(List<String> ids) {
@@ -78,7 +73,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
                 throw new BaseBusinessException(500, "创建待审类型必须一致");
             }
         }
-        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE);
+        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE, null);
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;
@@ -90,9 +85,10 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         evaluationSheet.setYear(year);
         evaluationSheet.setSort(dataReports.get(0).getSort());
         evaluationSheet.setMonth(month);
+        evaluationSheet.setNumber(number);
         evaluationSheet.setWritingBatchId(writingBatchId);
         List<String> times = dataReports.stream().map(DataReport::getCreatedTime).sorted().collect(Collectors.toList());
-        evaluationSheet.setCycleTime(times.get(0) + "-" + times.get(times.size() - 1));
+        evaluationSheet.setCycleTime(DateUtil.format(DateUtil.parse(times.get(0)), "YYYY-MM-dd") + "-" + DateUtil.format(DateUtil.parse(times.get(times.size() - 1)), "YYYY-MM-dd"));
         this.baseMapper.insert(evaluationSheet);
         this.writingBatchService.saveBatchInfo(writingBatchId, ids);
     }
@@ -109,7 +105,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         if (sort != dataReports.get(0).getSort()) {
             throw new BaseBusinessException(500, "现在加入的批次号必须一致");
         }
-        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE);
+        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE, null);
 
         this.writingBatchService.saveBatchInfo(writingBatchId, ids);
     }
@@ -126,8 +122,10 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     }
 
     @Override
-    @Transient
-    public List<ExpertVO> draw(DrawVO drawVO) {
+    @Transactional
+    public IPage<ExpertVO> draw(DrawVO drawVO) {
+        IPage<ExpertVO> page = drawVO.getPage();
+
         List<ExpertVO> expertVOList = new ArrayList<>();
         //保存专家鉴定人数
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(drawVO.getWritingBatchId());
@@ -164,7 +162,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             userManages.removeIf(userManage -> userIds.contains(userManage.getUserId()));
         }
         if (userManages.size() < drawVO.getNumber()) {
-            throw new BaseBusinessException(500, "专家抽签人数必须小于专家总人数!");
+            throw new BaseBusinessException(500, String.format("专家抽签人数必须小于专家总人数,专家总人数为:%s", userManages.size()));
         }
         //获取随机数
         Set<Integer> randomIntSet = new HashSet<>();
@@ -186,11 +184,35 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             ExpertVO expertVO = BeanUtil.toBean(userManage, ExpertVO.class);
             expertVO.setExpertType(drawVO.getExpertType());
             expertVO.setParticipationStatus(sheetDetail.getParticipationStatus());
+
             expertVOList.add(expertVO);
         }
+        page.setRecords(getData(page.getCurrent(), page.getSize(), expertVOList));
+        page.setTotal(expertVOList.size());
+        return page;
+    }
 
-
-        return expertVOList;
+    /**
+     * 数组分页
+     *
+     * @param currentPage
+     * @param pageSize
+     * @param data
+     * @return
+     */
+    public List<ExpertVO> getData(Long currentPage, Long pageSize, List<ExpertVO> data) {
+        long fromIndex = (currentPage - 1) * pageSize;
+        if (fromIndex >= data.size()) {
+            return Collections.emptyList();//空数组
+        }
+        if (fromIndex < 0) {
+            return Collections.emptyList();//空数组
+        }
+        long toIndex = currentPage * pageSize;
+        if (toIndex >= data.size()) {
+            toIndex = data.size();
+        }
+        return data.subList((int) fromIndex, (int) toIndex);
     }
 
     @Override
@@ -255,7 +277,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         }
         List<String> reportIds = writingBatchService.getReportByWritingBatchId(evaluationReleaseVO.getWritingBatchId());
         //修改审核进度待鉴定
-        dataReportService.updateDataExamine(reportIds, DataReport.EXAMINE_PROGRESS_FOUR);
+        dataReportService.updateDataExamine(reportIds, DataReport.EXAMINE_PROGRESS_FOUR, null);
         List<EvaluationSheetDetail> sheetDetails = this.evaluationSheetDetailMapper.getByEvaluationId(evaluationSheet.getEvaluationId());
         //获取参评专家id
         List<String> userIds = sheetDetails.stream().filter(evaluationSheetDetail -> evaluationSheetDetail.getParticipationStatus() == 1).map(EvaluationSheetDetail::getUserId).collect(Collectors.toList());
@@ -305,7 +327,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     public void updateCompleteStatus(String writingBatchId) {
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(writingBatchId);
         evaluationSheet.setCompleteStatus(1);
-        evaluationSheet.setCycleTime(evaluationSheet.getCreatedTime() + " - " + DateUtil.format(new Date(), "YYY-MM-DD"));
+        evaluationSheet.setCycleTime(DateUtil.format(DateUtil.parse(evaluationSheet.getCreatedTime()), "YYY-MM-DD") + " - " + DateUtil.format(new Date(), "YYY-MM-DD"));
         this.updateById(evaluationSheet);
     }
 
@@ -328,7 +350,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     @Override
     public void updateUpload(String writingBatchId) {
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(writingBatchId);
-        evaluationSheet.setUploadStatus("已上传");
+        evaluationSheet.setUploadStatus(1);
         this.updateById(evaluationSheet);
     }
 
@@ -393,10 +415,11 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         FileOutputStream fos = new FileOutputStream(Constants.TMP_HOME + fileName);
         template.write(fos);
         //上传文件
-        StorePath storePath = this.storageClient.uploadFile(new FileInputStream(Constants.TMP_HOME + fileName), new File(Constants.TMP_HOME + fileName).length(), formatSuffix, null);
+        String fileKey = QiniuUtil.fileUpload(Constants.TMP_HOME + fileName);
+//        StorePath storePath = this.storageClient.uploadFile(new FileInputStream(Constants.TMP_HOME + fileName), new File(Constants.TMP_HOME + fileName).length(), formatSuffix, null);
         FileInfoVO fileInfoVO = new FileInfoVO();
         fileInfoVO.setType("7");
-        fileInfoVO.setFilePath(storePath.getFullPath());
+        fileInfoVO.setFilePath(fileKey);
         fileInfoVO.setFileName(fileName);
         return fileInfoVO;
 

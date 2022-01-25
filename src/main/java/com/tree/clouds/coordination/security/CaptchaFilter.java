@@ -1,6 +1,5 @@
 package com.tree.clouds.coordination.security;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.tree.clouds.coordination.common.exception.CaptchaException;
 import com.tree.clouds.coordination.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,18 +44,18 @@ public class CaptchaFilter extends OncePerRequestFilter {
 	// 校验验证码逻辑
 	private void validate(HttpServletRequest httpServletRequest) {
 
-		String code = httpServletRequest.getParameter("code");
-		String key = httpServletRequest.getParameter("key");
+        String code = httpServletRequest.getParameter("code");
+        String key = httpServletRequest.getParameter("key");
 
-		if (StringUtils.isBlank(code) || StringUtils.isBlank(key)) {
-			throw new CaptchaException("验证码错误");
-		}
+//		if (StringUtils.isBlank(code) || StringUtils.isBlank(key)) {
+//			throw new CaptchaException("验证码错误");
+//		}
 
 //		if (!code.equals(redisUtil.hget(Const.CAPTCHA_KEY, key))) {
 //			throw new CaptchaException("验证码错误");
 //		}
 
-		// 一次性使用
+        // 一次性使用
 //		redisUtil.hdel(Const.CAPTCHA_KEY, key);
-	}
+    }
 }

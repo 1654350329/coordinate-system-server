@@ -115,12 +115,20 @@ public class DataReport extends BaseEntity implements Serializable {
     @TableField(ADDRESS)
     private String address;
 
-    @ApiModelProperty(value = "审核进度 0上报 1初审 2待鉴定 3鉴定复核 4认定审签")
+    @ApiModelProperty(value = "审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签")
     @TableField(EXAMINE_PROGRESS)
     private int examineProgress;
 
     @ApiModelProperty(value = "审核状态 1失败 0成功")
     @TableField("status")
     private int status;
+
+    @ApiModelProperty(value = "驳回意见")
+    @TableField("remark")
+    private String remark;
+
+    @ApiModelProperty(value = "审核环节 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签")
+    @TableField("link")
+    private int link;
 
 }

@@ -2,7 +2,7 @@ package com.tree.clouds.coordination.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.tree.clouds.coordination.common.Result;
+import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.AppraisalReviewBO;
 import com.tree.clouds.coordination.model.vo.AppraisalReviewPageVO;
@@ -38,19 +38,19 @@ public class AppraisalReviewController {
     @PostMapping("/appraisalReviewPage")
     @ApiOperation(value = "鉴定复核分页查询")
     @Log("鉴定复核分页查询")
-    public Result appraisePage(@RequestBody AppraisalReviewPageVO appraisePageVO) {
+    public RestResponse<IPage<AppraisalReviewBO>> appraisePage(@RequestBody AppraisalReviewPageVO appraisePageVO) {
         IPage<AppraisalReviewBO> page = appraisalReviewService.appraisalReviewPage(appraisePageVO);
-        return Result.succ(page);
+        return RestResponse.ok(page);
     }
 
     @Log("添加鉴定复核")
     @PostMapping("/addAppraisalReview")
     @ApiOperation(value = "添加鉴定复核")
-    public Result addAppraisalReview(@Validated @RequestBody List<AppraisalReviewVO> appraisalReviewVOS) {
+    public RestResponse<Boolean> addAppraisalReview(@Validated @RequestBody List<AppraisalReviewVO> appraisalReviewVOS) {
         for (AppraisalReviewVO appraisalReviewVO : appraisalReviewVOS) {
             appraisalReviewService.addAppraisalReview(appraisalReviewVO);
         }
-        return Result.succ(true);
+        return RestResponse.ok(true);
     }
 
 }

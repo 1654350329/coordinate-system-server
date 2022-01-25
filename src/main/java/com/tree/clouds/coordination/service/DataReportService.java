@@ -54,7 +54,7 @@ public interface DataReportService extends IService<DataReport> {
      * @param reportIds
      * @param progressStatus
      */
-    void updateDataExamine(List<String> reportIds, int progressStatus);
+    void updateDataExamine(List<String> reportIds, int progressStatus, String remark);
 
     UpdateDataReportVO getDataReportDetail(String reportId);
 

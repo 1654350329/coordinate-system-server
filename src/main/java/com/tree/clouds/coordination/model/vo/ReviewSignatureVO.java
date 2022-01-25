@@ -15,7 +15,7 @@ public class ReviewSignatureVO {
     @ApiModelProperty(value = "审签结果(0反驳 1 同意)")
     private String reviewResult;
 
-    @ApiModelProperty(value = "审签文件")
-    private FileInfoVO fileInfoVO;
+    @ApiModelProperty(value = "审签意见")
+    private String remark;
 
 }

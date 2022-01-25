@@ -16,7 +16,7 @@ public class PageParam {
     private long current = 1L;
     @ApiModelProperty(value = "页面大小", example = "10")
     private long size = 10L;
-    @ApiModelProperty(value = "排序参数", example = "column:createTime")
+    @ApiModelProperty(value = "排序参数")
     private List<OrderItem> orderItems = new ArrayList();
 
     @JsonIgnore

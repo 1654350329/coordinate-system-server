@@ -3,7 +3,6 @@ package com.tree.clouds.coordination.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.deepoove.poi.XWPFTemplate;
 import com.deepoove.poi.config.Configure;
-import com.github.tobato.fastdfs.domain.StorePath;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.mapper.DataReportMapper;
@@ -14,11 +13,10 @@ import com.tree.clouds.coordination.model.entity.MessageInfo;
 import com.tree.clouds.coordination.model.vo.FileInfoVO;
 import com.tree.clouds.coordination.model.vo.WritingResultPageVO;
 import com.tree.clouds.coordination.service.*;
+import com.tree.clouds.coordination.utils.QiniuUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
@@ -99,10 +97,11 @@ public class WritingResultServiceImpl implements WritingResultService {
 
         FileOutputStream fos = new FileOutputStream(Constants.TMP_HOME + fileName);
         template.write(fos);
-        StorePath storePath = this.storageClient.uploadFile(new FileInputStream(Constants.TMP_HOME + fileName), new File(Constants.TMP_HOME + fileName).length(), formatSuffix, null);
+        String fileKey = QiniuUtil.fileUpload(Constants.TMP_HOME + fileName);
+//        StorePath storePath = this.storageClient.uploadFile(new FileInputStream(Constants.TMP_HOME + fileName), new File(Constants.TMP_HOME + fileName).length(), formatSuffix, null);
         FileInfoVO fileInfoVO = new FileInfoVO();
         fileInfoVO.setType("6");
-        fileInfoVO.setFilePath(storePath.getFullPath());
+        fileInfoVO.setFilePath(fileKey);
         fileInfoVO.setFileName(fileName);
         return fileInfoVO;
     }

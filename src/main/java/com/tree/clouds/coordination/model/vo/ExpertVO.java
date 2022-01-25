@@ -1,9 +1,11 @@
 package com.tree.clouds.coordination.model.vo;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
+@ApiModel(value = "抽签评估专家信息", description = "抽签评估专家信息")
 public class ExpertVO {
     @ApiModelProperty(value = "专家主键")
     private String userId;
