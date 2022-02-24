@@ -40,29 +40,30 @@
         order by number desc limit 1
     </select>
     <select id="evaluationSheetPage" resultType="com.tree.clouds.coordination.model.entity.EvaluationSheet">
-        select a.* from evaluation_sheet a
+        select b.user_name as CREATED_USER,a.* from evaluation_sheet a
         left join user_manage b on a.CREATED_USER=b.USER_ID
-        where 1=1
+        left join appraise c on c.WRITING_BATCH_ID=a.WRITING_BATCH_ID
+        where 1=1 and c.APPRAISE_ID is null
         <if test="evaluationSheetPageVO.writingBatchId != null and evaluationSheetPageVO.writingBatchId !=''">
-            and WRITING_BATCH_ID like "%"#{evaluationSheetPageVO.writingBatchId}"%"
+            and a.WRITING_BATCH_ID like "%"#{evaluationSheetPageVO.writingBatchId}"%"
         </if>
         <if test="evaluationSheetPageVO.createUser != null and evaluationSheetPageVO.createUser !=''">
             and b.USER_NAME like "%"#{evaluationSheetPageVO.createUser}"%"
         </if>
         <if test="evaluationSheetPageVO.category != null and evaluationSheetPageVO.category !=''">
-            and category = #{evaluationSheetPageVO.category}
+            and a.category = #{evaluationSheetPageVO.category}
         </if>
         <if test="evaluationSheetPageVO.sort != null and evaluationSheetPageVO.sort !=''">
-            and sort = #{evaluationSheetPageVO.sort}
+            and a.sort = #{evaluationSheetPageVO.sort}
         </if>
         <if test="evaluationSheetPageVO.drawTimeStart != null and evaluationSheetPageVO.drawTimeStart !=''">
-            and drawTimeStart >= #{evaluationSheetPageVO.writingBatchId}
+            and a.draw_time >= #{evaluationSheetPageVO.drawTimeStart}
         </if>
         <if test="evaluationSheetPageVO.drawTimeEnd != null and evaluationSheetPageVO.drawTimeEnd !=''">
-            and WRITING_BATCH_ID &lt;= #{evaluationSheetPageVO.writingBatchId}
+            and a.draw_time &lt;= #{evaluationSheetPageVO.drawTimeEnd}
         </if>
         <if test="evaluationSheetPageVO.drawStatus != null and evaluationSheetPageVO.drawStatus !=''">
-            and drawStatus = #{evaluationSheetPageVO.drawStatus}
+            and a.drawStatus = #{evaluationSheetPageVO.drawStatus}
         </if>
 
     </select>
@@ -79,10 +80,10 @@
             and a.mount=#{writingListPageVO.mount}
         </if>
         <if test="writingListPageVO.identifiedName !=null and writingListPageVO.identifiedName!=''">
-            and c.identifiedName like "%"#{writingListPageVO.identifiedName}"%"
+            and c.identified_Name like "%"#{writingListPageVO.identifiedName}"%"
         </if>
         <if test="writingListPageVO.uploadStatus !=null and writingListPageVO.uploadStatus!=''">
-            and a.uploadStatus=#{writingListPageVO.uploadStatus}
+            and a.upload_Status=#{writingListPageVO.uploadStatus}
         </if>
 
     </select>

@@ -1,17 +1,16 @@
 package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.AppraiseMapper;
 import com.tree.clouds.coordination.model.bo.AppraiseBO;
-import com.tree.clouds.coordination.model.entity.AppraisalReview;
-import com.tree.clouds.coordination.model.entity.Appraise;
-import com.tree.clouds.coordination.model.entity.DataReport;
-import com.tree.clouds.coordination.model.entity.ReviewSignature;
+import com.tree.clouds.coordination.model.entity.*;
 import com.tree.clouds.coordination.model.vo.*;
 import com.tree.clouds.coordination.service.*;
+import com.tree.clouds.coordination.utils.BaseBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +18,7 @@ import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -39,6 +39,12 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
     private AppraisalReviewService appraisalReviewService;
     @Autowired
     private ReviewSignatureService reviewSignatureService;
+    @Autowired
+    private AppraiseService appraiseService;
+    @Autowired
+    private UserManageService userManageService;
+    @Autowired
+    private MessageInfoService messageInfoService;
 
     @Override
     public IPage<AppraiseBO> appraisePage(AppraisePageVO appraisePageVO) {
@@ -50,24 +56,30 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
     @Transient
     public void addAppraise(AppraiseVO appraiseVO) {
         Appraise appraise = this.getById(appraiseVO.getAppraiseId());
+        if (appraise.getAppraiseStatus() == 1) {
+            throw new BaseBusinessException(400, "已完成鉴定无法修改!");
+        }
         //修改审核进度为到复核一
         dataReportService.updateDataExamine(Collections.singletonList(appraise.getReportId()), DataReport.EXAMINE_PROGRESS_FOUR, null);
+        DataReport report = new DataReport();
+        report.setReportId(appraise.getReportId());
+        report.setSickCondition(appraiseVO.getSickCondition());
+        dataReportService.updateById(report);
         //更新鉴定状态
         Appraise app = BeanUtil.toBean(appraiseVO, Appraise.class);
-        app.setAppralseStatus("1");
+        app.setAppraiseStatus(1);
         app.setAppraiseId(appraiseVO.getAppraiseId());
         this.updateById(app);
         //添加到鉴定复合表
         AppraisalReview appraisalReview = new AppraisalReview();
         appraisalReview.setAppraisalReviewStatus(0);
         appraisalReview.setWritingBatchId(appraise.getWritingBatchId());
-        appraisalReview.setAppralseNumber(appraise.getAppralseNumber());
+        appraisalReview.setAppraiseNumber(appraise.getAppraiseNumber());
         appraisalReview.setReportId(appraise.getReportId());
         appraisalReviewService.save(appraisalReview);
         //保存文件信息
-        FileInfoVO fileInfoVO = appraiseVO.getFileInfoVO();
-        fileInfoVO.setType("3");
-        fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), appraise.getAppraiseId());
+        appraiseVO.getFileInfoVO().forEach(fileInfoVO -> fileInfoVO.setType("3"));
+        fileInfoService.saveFileInfo(appraiseVO.getFileInfoVO(), appraise.getAppraiseId());
     }
 
     @Override
@@ -78,12 +90,12 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
     }
 
     @Override
-    public Integer getAppralseNumber(String time) {
-        String appralseNumber = this.baseMapper.getAppralseNumber(time);
-        if (appralseNumber == null) {
+    public Integer getAppraiseNumber(String time) {
+        String appraiseNumber = this.baseMapper.getAppraiseNumber(time);
+        if (appraiseNumber == null) {
             return 0;
         }
-        return Integer.parseInt(appralseNumber) + 1;
+        return Integer.parseInt(appraiseNumber) + 1;
     }
 
     @Override
@@ -100,26 +112,71 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
 
     @Override
     public AppraiseInfoVO appraiseInfoVO(String reportId) {
+        DataReport report = dataReportService.getById(reportId);
         AppraiseInfoVO appraiseInfo = new AppraiseInfoVO();
+        //鉴定意见
+        Appraise appraise = appraiseService.getByReportId(reportId);
+        if (appraise == null) {
+            return appraiseInfo;
+        }
+        appraise.setSickCondition(report.getSickCondition());
+        List<FileInfo> fileInfoList = fileInfoService.getByBizIdsAndType(appraise.getAppraiseId(), "3");
+        if (CollUtil.isNotEmpty(fileInfoList)) {
+            List<String> filePathS = fileInfoList.stream().map(FileInfo::getFilePath).collect(Collectors.toList());
+            appraise.setFiles(filePathS);
+        }
+        appraiseInfo.setAppraise(appraise);
         //复核信息
-        AppraisalReview appraise = appraisalReviewService.getByReportId(reportId);
+        AppraisalReview appraisalReview = appraisalReviewService.getByReportId(reportId);
+        if (appraisalReview == null) {
+            return appraiseInfo;
+        }
         List<AppraisalReviewExpertVO> appraisalReviewExpertVOS = new ArrayList<>();
-        if (appraise.getAppraisalReviewStatus() == 1) {
-            AppraisalReviewExpertVO appraisalReviewExpertVO = BeanUtil.toBean(appraise, AppraisalReviewExpertVO.class);
-            appraisalReviewExpertVO.setAppraisalReviewResult(appraise.getAppraisalReviewResultOne());
-            appraisalReviewExpertVO.setAppraisalReviewTime(appraise.getAppraisalReviewTimeOne());
-            appraisalReviewExpertVO.setAppraisalReviewUser(appraise.getAppraisalReviewUserOne());
+        if (appraisalReview.getAppraisalReviewStatus() == 1) {
+            AppraisalReviewExpertVO appraisalReviewExpertVO = BeanUtil.toBean(appraisalReview, AppraisalReviewExpertVO.class);
+            appraisalReviewExpertVO.setAppraisalReviewResult(appraisalReview.getAppraisalReviewResultOne());
+            appraisalReviewExpertVO.setAppraisalReviewTime(appraisalReview.getAppraisalReviewTimeOne());
+            if (appraisalReview.getAppraisalReviewUserOne() != null) {
+                appraisalReviewExpertVO.setAppraisalReviewUser(userManageService.getById(appraisalReview.getAppraisalReviewUserOne()).getUserName());
+            }
+            appraisalReviewExpertVO.setRemark(appraisalReview.getRemarkOne());
             appraisalReviewExpertVOS.add(appraisalReviewExpertVO);
         }
-        if (appraise.getAppraisalReviewStatus() == 2) {
-            AppraisalReviewExpertVO appraisalReviewExpertVO = BeanUtil.toBean(appraise, AppraisalReviewExpertVO.class);
-            appraisalReviewExpertVO.setAppraisalReviewResult(appraise.getAppraisalReviewResultTwo());
-            appraisalReviewExpertVO.setAppraisalReviewTime(appraise.getAppraisalReviewTimeTwo());
-            appraisalReviewExpertVO.setAppraisalReviewUser(appraise.getAppraisalReviewUserTwo());
+        if (appraisalReview.getAppraisalReviewStatus() == 2) {
+            AppraisalReviewExpertVO reviewExpertVO = BeanUtil.toBean(appraisalReview, AppraisalReviewExpertVO.class);
+            reviewExpertVO.setAppraisalReviewStatus(1);
+            reviewExpertVO.setAppraisalReviewResult(appraisalReview.getAppraisalReviewResultOne());
+            reviewExpertVO.setAppraisalReviewTime(appraisalReview.getAppraisalReviewTimeOne());
+            if (appraisalReview.getAppraisalReviewUserOne() != null) {
+                reviewExpertVO.setAppraisalReviewUser(userManageService.getById(appraisalReview.getAppraisalReviewUserOne()).getUserName());
+            }
+            reviewExpertVO.setRemark(appraisalReview.getRemarkOne());
+            appraisalReviewExpertVOS.add(reviewExpertVO);
+
+            AppraisalReviewExpertVO appraisalReviewExpertVO = BeanUtil.toBean(appraisalReview, AppraisalReviewExpertVO.class);
+            appraisalReviewExpertVO.setAppraisalReviewResult(appraisalReview.getAppraisalReviewResultTwo());
+            appraisalReviewExpertVO.setAppraisalReviewTime(appraisalReview.getAppraisalReviewTimeTwo());
+            if (appraisalReview.getAppraisalReviewUserTwo() != null) {
+                appraisalReviewExpertVO.setAppraisalReviewUser(userManageService.getById(appraisalReview.getAppraisalReviewUserTwo()).getUserName());
+            }
+            appraisalReviewExpertVO.setRemark(appraisalReview.getRemarkOne());
             appraisalReviewExpertVOS.add(appraisalReviewExpertVO);
         }
         appraiseInfo.setAppraisalReviewExpertVOS(appraisalReviewExpertVOS);
         ReviewSignature reviewSignature = reviewSignatureService.getByReportId(reportId);
+        if (reviewSignature == null) {
+            return appraiseInfo;
+        }
+        if (reviewSignature.getReviewUser() != null) {
+            reviewSignature.setReviewUser(userManageService.getById(reviewSignature.getReviewUser()).getUserName());
+        }
+        MessageInfo messageInfo = messageInfoService.getOne(new QueryWrapper<MessageInfo>().eq(MessageInfo.REPORT_ID, reportId));
+        if (messageInfo != null) {
+            List<FileInfo> fileInfos = fileInfoService.getByBizIdsAndType(messageInfo.getMessageId(), "6");
+            if (CollUtil.isNotEmpty(fileInfos)) {
+                reviewSignature.setResultFile(fileInfos.get(0).getFilePath());
+            }
+        }
         appraiseInfo.setReviewSignature(reviewSignature);
         return appraiseInfo;
     }

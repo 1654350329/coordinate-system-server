@@ -1,9 +1,11 @@
 package com.tree.clouds.coordination.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.deepoove.poi.XWPFTemplate;
 import com.deepoove.poi.config.Configure;
-import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.mapper.DataReportMapper;
 import com.tree.clouds.coordination.model.bo.WritingResultBO;
@@ -13,7 +15,9 @@ import com.tree.clouds.coordination.model.entity.MessageInfo;
 import com.tree.clouds.coordination.model.vo.FileInfoVO;
 import com.tree.clouds.coordination.model.vo.WritingResultPageVO;
 import com.tree.clouds.coordination.service.*;
+import com.tree.clouds.coordination.utils.BaseBusinessException;
 import com.tree.clouds.coordination.utils.QiniuUtil;
+import com.tree.clouds.coordination.utils.Word2PdfUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +26,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class WritingResultServiceImpl implements WritingResultService {
@@ -40,9 +45,6 @@ public class WritingResultServiceImpl implements WritingResultService {
     @Autowired
     private ReviewSignatureService reviewSignatureService;
 
-    @Autowired
-    private FastFileStorageClient storageClient;
-
 
     @Override
     public IPage<WritingResultBO> writingResultPage(WritingResultPageVO writingResultPageVO) {
@@ -54,6 +56,13 @@ public class WritingResultServiceImpl implements WritingResultService {
     public void writingBuild(String reportId) {
         DataReport dataReport = this.dataReportMapper.selectById(reportId);
         Appraise appraise = appraiseService.getByReportId(reportId);
+        QueryWrapper<MessageInfo> wrapper = new QueryWrapper();
+        wrapper.eq(MessageInfo.REPORT_ID, reportId);
+        List<MessageInfo> list = messageInfoService.list(wrapper);
+        if (CollUtil.isNotEmpty(list)) {
+            throw new BaseBusinessException(400, "已生成结论书,不可重复生成!");
+        }
+
         try {
             //流转到结论送达
             MessageInfo messageInfo = new MessageInfo();
@@ -62,7 +71,7 @@ public class WritingResultServiceImpl implements WritingResultService {
             messageInfo.setReportId(appraise.getReportId());
             messageInfoService.save(messageInfo);
             //文件保存
-            FileInfoVO fileInfoVO = wordBuild(dataReport.getIdentifiedName(), dataReport.getIdCart(), appraise.getAppralseNumber(), dataReport.getSickCondition(), appraise.getAppraiseResult());
+            FileInfoVO fileInfoVO = wordBuild(dataReport.getSort(), dataReport.getUnitName(), dataReport.getIdentifiedName(), dataReport.getIdCart(), appraise.getAppraiseNumber(), dataReport.getSickCondition(), appraise.getAppraiseResult());
             this.fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), messageInfo.getMessageId());
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,7 +79,16 @@ public class WritingResultServiceImpl implements WritingResultService {
 
     }
 
-    public FileInfoVO wordBuild(String name, String idCart, String number, String sickCondition, String appraiseResult) throws IOException {
+    @Override
+    public String getWritingFile(String reportId) {
+        String writingFile = this.messageInfoService.getWritingFile(reportId);
+        if (StrUtil.isBlank(writingFile)) {
+            throw new BaseBusinessException(400, "还未生成结论书!,请先生成结论书!");
+        }
+        return writingFile;
+    }
+
+    public FileInfoVO wordBuild(int sort, String unit, String name, String idCart, String number, String sickCondition, String appraiseResult) throws IOException {
         Calendar now = Calendar.getInstance();
         HashMap<String, Object> info = new HashMap<String, Object>() {{
             put("year", now.get(Calendar.YEAR));//当前年
@@ -81,15 +99,21 @@ public class WritingResultServiceImpl implements WritingResultService {
             put("number", number);//编号
             put("sickCondition", sickCondition);//病残情况
             put("appraiseResult", appraiseResult);//鉴定结论
-
+            put("unit", unit);//单位
         }};
-        String resource = this.getClass().getClassLoader().getResource("result.docx").getFile();
+        String resource;
+        if (sort == 0 && unit == null) {
+            resource = this.getClass().getClassLoader().getResource("result.docx").getFile();
+        } else {
+            resource = this.getClass().getClassLoader().getResource("result2.docx").getFile();
+        }
+        if (sort == 1) {
+            resource = this.getClass().getClassLoader().getResource("result3.docx").getFile();
+        }
         //渲染表格  动态行
         Configure config = Configure.newBuilder().build();
         XWPFTemplate template = XWPFTemplate.compile(resource, config).render(info);
         //=================生成文件保存=================
-//        String courseFile = new File("").getCanonicalPath() + File.separator + "file";
-//        FileUtil.mkdir(courseFile);
         // 生成的word格式
         String formatSuffix = ".docx";
         // 拼接后的文件名
@@ -97,8 +121,8 @@ public class WritingResultServiceImpl implements WritingResultService {
 
         FileOutputStream fos = new FileOutputStream(Constants.TMP_HOME + fileName);
         template.write(fos);
-        String fileKey = QiniuUtil.fileUpload(Constants.TMP_HOME + fileName);
-//        StorePath storePath = this.storageClient.uploadFile(new FileInputStream(Constants.TMP_HOME + fileName), new File(Constants.TMP_HOME + fileName).length(), formatSuffix, null);
+        String file = Word2PdfUtil.doc2Img(Constants.TMP_HOME + fileName, Constants.TMP_HOME);
+        String fileKey = QiniuUtil.fileUpload(file);
         FileInfoVO fileInfoVO = new FileInfoVO();
         fileInfoVO.setType("6");
         fileInfoVO.setFilePath(fileKey);

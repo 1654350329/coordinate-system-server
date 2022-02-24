@@ -9,30 +9,40 @@
     </sql>
     <select id="appraisalReviewPage" resultType="com.tree.clouds.coordination.model.bo.AppraisalReviewBO">
         select
-        b.*,a.APPRAISE_RESULT_ID,a.WRITING_BATCH_ID,a.APPRALSE_NUMBER,a.APPRAISAL_REVIEW_STATUS,a.APPRAISAL_REVIEW_RESULT_ONE,a.APPRAISAL_REVIEW_RESULT_TWO,a.APPRALSE_NUMBER
+        a.remark,b.*,a.APPRAISE_RESULT_ID,a.WRITING_BATCH_ID,a.APPRAISE_NUMBER,a.APPRAISAL_REVIEW_STATUS,a.APPRAISAL_REVIEW_RESULT
         from appraisal_review a
         left JOIN data_report b on a.report_ID=b.report_ID
         where 1=1
-        <if test="appraisalReviewPageVO.appralseNumber != null and appraisalReviewPageVO.appralseNumber !=''">
-            and b.appralseNumber=#{appraisalReviewBO.appralseNumber}
+        <if test="appraisalReviewPageVO.writingBatchId != null and appraisalReviewPageVO.writingBatchId !=''">
+            and a.WRITING_BATCH_ID like CONCAT('%',#{appraisalReviewPageVO.writingBatchId},'%')
+        </if>
+        <if test="appraisalReviewPageVO.appraiseNumber != null and appraisalReviewPageVO.appraiseNumber !=''">
+            and b.appraiseNumber=#{appraisalReviewPageVO.appraiseNumber}
+        </if>
+        <if test="appraisalReviewPageVO.appraisalReviewStatus != null and appraisalReviewPageVO.appraisalReviewStatus !=''">
+            and b.appraisal_Review_Status=#{appraisalReviewPageVO.appraisalReviewStatus}
+        </if>
+        <if test="appraisalReviewPageVO.reviewResult != null and appraisalReviewPageVO.reviewResult !=''">
+            and (b.APPRAISAL_REVIEW_RESULT_ONE=#{appraisalReviewPageVO.reviewResult} or
+            b.APPRAISAL_REVIEW_RESULT_TWO=#{appraisalReviewBO.reviewResult})
         </if>
         <if test="appraisalReviewPageVO.identifiedName != null and appraisalReviewPageVO.identifiedName !=''">
-            and b.identified_name like "%"#{appraisalReviewBO.identifiedName}"%"
+            and b.identified_name like CONCAT('%',#{appraisalReviewPageVO.identifiedName},'%')
         </if>
         <if test="appraisalReviewPageVO.category != null and appraisalReviewPageVO.category !=''">
-            and b.category=#{appraisalReviewBO.category}
+            and b.category=#{appraisalReviewPageVO.category}
         </if>
         <if test="appraisalReviewPageVO.sort != null and appraisalReviewPageVO.sort !=''">
-            and b.sort=#{appraisalReviewBO.sort}
+            and b.sort=#{appraisalReviewPageVO.sort}
         </if>
         <if test="appraisalReviewPageVO.phoneNumber != null and appraisalReviewPageVO.phoneNumber !=''">
-            and b.phone_number=#{appraisalReviewBO.phoneNumber}
+            and b.phone_number=#{appraisalReviewPageVO.phoneNumber}
         </if>
         <if test="appraisalReviewPageVO.taskType != null and appraisalReviewPageVO.taskType !=''">
-            and b.task_type=#{appraisalReviewBO.taskType}
+            and b.task_type=#{appraisalReviewPageVO.taskType}
         </if>
         <if test="appraisalReviewPageVO.sex != null and appraisalReviewPageVO.sex !=''">
-            and b.sex=#{appraisalReviewBO.sex}
+            and b.sex=#{appraisalReviewPageVO.sex}
         </if>
     </select>
 

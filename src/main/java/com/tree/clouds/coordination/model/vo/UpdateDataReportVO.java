@@ -34,12 +34,14 @@ public class UpdateDataReportVO {
     @ApiModelProperty(value = "身份证")
     @NotBlank(message = "身份证不能为空")
     private String idCart;
+    @ApiModelProperty(value = "出生日期")
+    private String birth;
 
     @ApiModelProperty(value = "单位名称")
-    @NotBlank(message = "单位名称不能为空")
+//    @NotBlank(message = "单位名称不能为空")
     private String unitName;
 
-    @ApiModelProperty(value = "类型(1 工 2病)")
+    @ApiModelProperty(value = "类型(0 工 1病)")
     @NotNull(message = "类型不能为空")
     private int sort;
 

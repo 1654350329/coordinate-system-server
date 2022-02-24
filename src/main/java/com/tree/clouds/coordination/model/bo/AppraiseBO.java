@@ -13,10 +13,10 @@ public class AppraiseBO extends DataReport {
     private String writingBatchId;
 
     @ApiModelProperty(value = "认定编号")
-    private String appralseNumber;
+    private String appraiseNumber;
 
-    @ApiModelProperty(value = "鉴定状态")
-    private String appralseStatus;
+    @ApiModelProperty(value = "鉴定状态 0未鉴定 1已鉴定")
+    private Integer appraiseStatus;
 
 
 }

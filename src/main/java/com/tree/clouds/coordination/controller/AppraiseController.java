@@ -5,7 +5,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.AppraiseBO;
-import com.tree.clouds.coordination.model.vo.*;
+import com.tree.clouds.coordination.model.vo.AppraiseInfoVO;
+import com.tree.clouds.coordination.model.vo.AppraisePageVO;
+import com.tree.clouds.coordination.model.vo.AppraiseVO;
+import com.tree.clouds.coordination.model.vo.PublicIdReqVO;
 import com.tree.clouds.coordination.service.AppraiseService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,8 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * <p>
@@ -53,18 +54,18 @@ public class AppraiseController {
         return RestResponse.ok(true);
     }
 
-    @Log("专家组信息")
-    @PostMapping("/ExpertGroupInfo")
-    @ApiOperation(value = "专家组信息")
-//    @PreAuthorize("hasAuthority('appraise:appraise:add')")
-    public RestResponse<List<ExpertGroupInfo>> ExpertGroupInfo(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
-        List<ExpertGroupInfo> userManages = appraiseService.expertGroupInfo(publicIdReqVO.getId());
-        return RestResponse.ok(userManages);
-    }
+//    @Log("专家组信息")
+//    @PostMapping("/ExpertGroupInfo")
+//    @ApiOperation(value = "专家组信息")
+////    @PreAuthorize("hasAuthority('appraise:appraise:add')")
+//    public RestResponse<List<ExpertGroupInfo>> ExpertGroupInfo(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
+//        List<ExpertGroupInfo> userManages = appraiseService.expertGroupInfo(publicIdReqVO.getId());
+//        return RestResponse.ok(userManages);
+//    }
 
     @Log("鉴定意见")
     @PostMapping("/AppraiseInfoVO")
-    @ApiOperation(value = "鉴定意见")
+    @ApiOperation(value = "鉴定意见 id为 reportId")
 //    @PreAuthorize("hasAuthority('appraise:appraise:add')")
     public RestResponse<AppraiseInfoVO> AppraiseInfoVO(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
         AppraiseInfoVO appraiseInfoVO = appraiseService.appraiseInfoVO(publicIdReqVO.getId());

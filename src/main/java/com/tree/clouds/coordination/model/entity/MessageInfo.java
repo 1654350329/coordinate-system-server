@@ -30,6 +30,7 @@ public class MessageInfo extends BaseEntity implements Serializable {
     public static final String MESSAGE_STATUS = "MESSAGE_STATUS";
     public static final String COMPLETION_TIME = "COMPLETION_TIME";
     public static final String COMPLETION_METHOD = "COMPLETION_METHOD";
+    public static final String REPORT_ID = "report_Id";
     private static final long serialVersionUID = 1L;
     @ApiModelProperty(value = "主键")
     @TableId(value = MESSAGE_ID, type = IdType.UUID)

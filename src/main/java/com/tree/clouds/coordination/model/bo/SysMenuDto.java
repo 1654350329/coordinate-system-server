@@ -19,7 +19,7 @@ import java.util.List;
 @Data
 public class SysMenuDto implements Serializable {
 
-    private Long id;
+    private String id;
     private String name;
     private String title;
     private String icon;

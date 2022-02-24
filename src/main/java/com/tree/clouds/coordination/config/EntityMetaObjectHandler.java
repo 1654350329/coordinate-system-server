@@ -27,6 +27,6 @@ public class EntityMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         this.setFieldValByName("updatedUser", LoginUserUtil.getUserId(), metaObject);
-        this.setFieldValByName("createdTime", DateUtil.now(), metaObject);
+        this.setFieldValByName("updatedTime", DateUtil.now(), metaObject);
     }
 }

@@ -1,5 +1,6 @@
 package com.tree.clouds.coordination.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.WritingBatchMapper;
@@ -38,5 +39,10 @@ public class WritingBatchServiceImpl extends ServiceImpl<WritingBatchMapper, Wri
             return writingBatch;
         }).collect(Collectors.toList());
         this.saveBatch(writingBatches);
+    }
+
+    @Override
+    public boolean getEvaluationSheetStatus(String reportId) {
+        return CollUtil.isNotEmpty(this.list(new QueryWrapper<WritingBatch>().eq(WritingBatch.REPORT_ID, reportId)));
     }
 }

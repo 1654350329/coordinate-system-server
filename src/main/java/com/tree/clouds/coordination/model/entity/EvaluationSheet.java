@@ -9,8 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
-
 /**
  * <p>
  * 评估表
@@ -23,7 +21,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @TableName("evaluation_sheet")
 @ApiModel(value = "认定评估分页", description = "评估表")
-public class EvaluationSheet extends BaseEntity implements Serializable {
+public class EvaluationSheet extends BaseEntity {
 
     public static final String EVALUATION_ID = "EVALUATION_ID";
     public static final String WRITING_BATCH_ID = "WRITING_BATCH_ID";
@@ -100,5 +98,4 @@ public class EvaluationSheet extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "附件状态 0未上传 1已上传")
     @TableField(UPLOAD_STATUS)
     private int uploadStatus;
-
 }

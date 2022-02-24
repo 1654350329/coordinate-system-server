@@ -6,6 +6,7 @@ import com.tree.clouds.coordination.model.bo.DataReportBO;
 import com.tree.clouds.coordination.model.bo.ReportDetailInfoBO;
 import com.tree.clouds.coordination.model.entity.DataReport;
 import com.tree.clouds.coordination.model.vo.DataReportPageVO;
+import com.tree.clouds.coordination.model.vo.WritingBatchVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public interface DataReportMapper extends BaseMapper<DataReport> {
 
     IPage<DataReportBO> selectDataReport(IPage<DataReportBO> page, @Param("dataReportPageVO") DataReportPageVO dataReportPageVO);
 
+    IPage<DataReportBO> getDataReportPage(IPage<DataReportBO> page, @Param("writingBatchVO") WritingBatchVO writingBatchVO);
 
     List<ReportDetailInfoBO> getDetailInfo(@Param("reports") List<String> reports);
+
 }

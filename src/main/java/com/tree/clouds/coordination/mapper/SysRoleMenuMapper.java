@@ -16,5 +16,5 @@ import java.util.List;
  */
 public interface SysRoleMenuMapper extends BaseMapper<SysRoleMenu> {
 
-    List<Long> getNavMenuIds(@Param("userId") String userId);
+    List<String> getNavMenuIds(@Param("userId") String userId);
 }

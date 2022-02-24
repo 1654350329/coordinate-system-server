@@ -22,6 +22,15 @@
     <sql id="Base_Column_List">
         EVALUATION_DETAIL_ID, EVALUATION_ID, USER_ID, EXPERT_TYPE, GROUP_LEADER, PARTICIPATION_STATUS, REMARK, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
+    <select id="expertDetailPage" resultType="com.tree.clouds.coordination.model.vo.ExpertDetailVO">
+        select a.DRAW_TIME,b.* ,c.* from evaluation_sheet a
+        left join evaluation_sheet_detail b on a.EVALUATION_ID=b.EVALUATION_ID
+        left join user_manage c on c.USER_ID =b.USER_ID
+        where a.WRITING_BATCH_ID=#{writingBatchVO.writingBatchId} and b.EXPERT_TYPE =1
+        <if test="writingBatchVO.participationStatus !=null">
+            b.participation_Status=#{writingBatchVO.participationStatus}
+        </if>
+    </select>
 
 
 </mapper>

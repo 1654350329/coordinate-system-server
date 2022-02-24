@@ -19,10 +19,7 @@ import com.tree.clouds.coordination.utils.LoginUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -49,24 +46,24 @@ public class DataExamineServiceImpl extends ServiceImpl<DataExamineMapper, DataE
         for (DataExamineVO dataExamineVO : dataExamineVOS) {
             DataExamine examine = this.getById(dataExamineVO.getDataExamineId());
             DataReport report = this.dataReportService.getById(examine.getReportId());
-            if (!report.getUpdatedTime().equals(dataExamineVO.getUpdateTime())) {
+            if (dataExamineVO.getUpdateTime() == null || !report.getUpdatedTime().equals(dataExamineVO.getUpdateTime())) {
                 throw new BaseBusinessException(400, "审核数据已修改,请重新刷新数据!");
+            }
+            if (examine.getExamineStatus() == 1) {
+                throw new BaseBusinessException(400, "审核已完成,不能修改数据!");
             }
             DataExamine dataExamine = BeanUtil.toBean(dataExamineVO, DataExamine.class);
             dataExamine.setExamineUser(LoginUserUtil.getUserId());
-            dataExamine.setExamineTime(DateUtil.format(new Date(), "YYYY-MM-DD"));
+            dataExamine.setExamineTime(DateUtil.format(new Date(), "YYYY-MM-dd"));
             dataExamine.setExamineStatus(1);
             this.updateById(dataExamine);
-
-            DataReport dataReport = new DataReport();
-            dataReport.setReportId(examine.getReportId());
             //修改审核成功状态为到3鉴定 失败为0初始
             if (dataExamineVO.getStatus() == 0) {
-                dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_ZERO);
+                dataReportService.updateDataExamine(Collections.singletonList(report.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, dataExamineVO.getExamineDescribe());
             } else {
-                dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_THREE);
+                dataReportService.updateDataExamine(Collections.singletonList(report.getReportId()), DataReport.EXAMINE_PROGRESS_THREE, null);
             }
-            dataReportService.updateById(dataReport);
+
         }
     }
 

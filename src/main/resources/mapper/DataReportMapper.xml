@@ -34,7 +34,7 @@
         left join file_info c on b.REVIEW_AND_SIGNATURE_ID=c.biz_id
         where 1=1 and a.del=0
         <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
-            and a.IDENTIFIED_NUMBER=#{dataReportPageVO.identifiedName}
+            and a.IDENTIFIED_name like "%"#{dataReportPageVO.identifiedName}"%"
         </if>
         <if test="dataReportPageVO.category != null and dataReportPageVO.category !=''">
             and a.CATEGORY=#{dataReportPageVO.category}
@@ -68,7 +68,7 @@
         </if>
     </select>
     <select id="getDetailInfo" resultType="com.tree.clouds.coordination.model.bo.ReportDetailInfoBO">
-        select a.*, b.APPRAISE_GRADE, b.APPRAISE_RESULT, b.APPRALSE_NUMBER
+        select a.*, b.APPRAISE_GRADE, b.APPRAISE_RESULT, b.APPRAISE_NUMBER
         from data_report a
         left join appraise b on a.report_ID = b.report_ID
         where a.REPORT_ID in
@@ -76,5 +76,11 @@
             #{id}
         </foreach>
     </select>
+    <select id="getDataReportPage" resultType="com.tree.clouds.coordination.model.bo.DataReportBO">
+        select b.* from writing_batch a
+        left join data_report b on b.report_id=a.report_id
+        where a.WRITING_BATCH_ID= #{writingBatchVO.writingBatchId}
+    </select>
+
 
 </mapper>

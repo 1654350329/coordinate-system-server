@@ -16,7 +16,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface LoginLogMapper extends BaseMapper<LoginLog> {
 
-    IPage<LoginLog> loginLogPage(IPage<LoginLog> page, @Param("loginLogPageVO") LoginLogPageVO loginLogPageVO);
+    IPage<LoginLog> loginLogPage(IPage<Object> page, @Param("loginLogPageVO") LoginLogPageVO loginLogPageVO);
 
-    LoginLog loginInfo(@Param("account") String account);
+    LoginLog loginInfo(@Param("userAccount") String userAccount);
 }

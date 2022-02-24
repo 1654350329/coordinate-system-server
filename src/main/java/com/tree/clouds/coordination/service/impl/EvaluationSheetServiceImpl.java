@@ -13,6 +13,7 @@ import com.deepoove.poi.policy.HackLoopTableRenderPolicy;
 import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.mapper.EvaluationSheetDetailMapper;
 import com.tree.clouds.coordination.mapper.EvaluationSheetMapper;
+import com.tree.clouds.coordination.model.bo.DataReportBO;
 import com.tree.clouds.coordination.model.bo.WritingListBO;
 import com.tree.clouds.coordination.model.entity.*;
 import com.tree.clouds.coordination.model.vo.*;
@@ -68,11 +69,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     public void addEvaluationSheet(List<String> ids) {
         //修改资料上报任务状态
         List<DataReport> dataReports = dataReportService.listByIds(ids);
-        for (DataReport dataReport : dataReports) {
-            if (dataReports.get(0).getSort() != dataReport.getSort()) {
-                throw new BaseBusinessException(500, "创建待审类型必须一致");
-            }
-        }
+        check(dataReports);
         dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE, null);
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
@@ -85,10 +82,11 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         evaluationSheet.setYear(year);
         evaluationSheet.setSort(dataReports.get(0).getSort());
         evaluationSheet.setMonth(month);
-        evaluationSheet.setNumber(number);
+        evaluationSheet.setNumber(number + 1);
         evaluationSheet.setWritingBatchId(writingBatchId);
+        evaluationSheet.setEvaluationNumber(ids.size());
         List<String> times = dataReports.stream().map(DataReport::getCreatedTime).sorted().collect(Collectors.toList());
-        evaluationSheet.setCycleTime(DateUtil.format(DateUtil.parse(times.get(0)), "YYYY-MM-dd") + "-" + DateUtil.format(DateUtil.parse(times.get(times.size() - 1)), "YYYY-MM-dd"));
+        evaluationSheet.setCycleTime(DateUtil.format(DateUtil.parse(times.get(0)), "YYYY-MM-dd") + " -- " + DateUtil.format(DateUtil.parse(times.get(times.size() - 1)), "YYYY-MM-dd"));
         this.baseMapper.insert(evaluationSheet);
         this.writingBatchService.saveBatchInfo(writingBatchId, ids);
     }
@@ -96,18 +94,26 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     @Override
     public void joinEvaluationSheet(String writingBatchId, List<String> ids) {
         List<DataReport> dataReports = dataReportService.listByIds(ids);
-        for (DataReport dataReport : dataReports) {
-            if (dataReports.get(0).getSort() != dataReport.getSort()) {
-                throw new BaseBusinessException(500, "创建待审类型必须一致");
-            }
-        }
+        //判断是否符合加入待审表
+        check(dataReports);
         int sort = writingBatchId.contains("工") ? 0 : 1;
         if (sort != dataReports.get(0).getSort()) {
-            throw new BaseBusinessException(500, "现在加入的批次号必须一致");
+            throw new BaseBusinessException(500, "与现在加入的批次号必须一致");
         }
         dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE, null);
 
         this.writingBatchService.saveBatchInfo(writingBatchId, ids);
+    }
+
+    private void check(List<DataReport> dataReports) {
+        for (DataReport dataReport : dataReports) {
+            if (dataReports.get(0).getSort() != dataReport.getSort()) {
+                throw new BaseBusinessException(500, "创建待审类型必须一致");
+            }
+            if (writingBatchService.getEvaluationSheetStatus(dataReport.getReportId())) {
+                throw new BaseBusinessException(500, "该上报任务已加入待审表,不能重复加入!");
+            }
+        }
     }
 
     @Override
@@ -116,17 +122,33 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     }
 
     @Override
+    public IPage<DataReportBO> reportDetailPage(WritingBatchVO writingBatchVO) {
+        return dataReportService.dataReportPage(writingBatchVO);
+    }
+
+
+    @Override
     public IPage<EvaluationSheet> evaluationSheetPage(EvaluationSheetPageVO evaluationSheetPageVO) {
         IPage<EvaluationSheet> page = evaluationSheetPageVO.getPage();
-        return this.baseMapper.evaluationSheetPage(page, evaluationSheetPageVO);
+        page = this.baseMapper.evaluationSheetPage(page, evaluationSheetPageVO);
+        return page;
+    }
+
+    @Override
+    public EvaluationSheet evaluationSheetDetail(String id) {
+        EvaluationSheet evaluationSheet = this.getById(id);
+        evaluationSheet.setCreatedUser(this.userManageService.getById(evaluationSheet.getCreatedUser()).getUserName());
+        return evaluationSheet;
+    }
+
+    @Override
+    public IPage<ExpertDetailVO> expertDetailPage(WritingBatchVO writingBatchVO) {
+        return this.evaluationSheetDetailMapper.expertDetailPage(writingBatchVO.getPage(), writingBatchVO);
     }
 
     @Override
     @Transactional
-    public IPage<ExpertVO> draw(DrawVO drawVO) {
-        IPage<ExpertVO> page = drawVO.getPage();
-
-        List<ExpertVO> expertVOList = new ArrayList<>();
+    public void draw(DrawVO drawVO) {
         //保存专家鉴定人数
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(drawVO.getWritingBatchId());
         if (evaluationSheet == null) {
@@ -137,18 +159,16 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
                 throw new BaseBusinessException(500, "参评专家组已完成抽签!");
             }
             evaluationSheet.setExpertNumber(drawVO.getNumber());
-            evaluationSheet.setEvaluationNumber(evaluationSheet.getAlternativeExpertNumber() + drawVO.getNumber());
         } else {
-            if (evaluationSheet.getAlternativeExpertNumber() != 0) {
-                throw new BaseBusinessException(500, "候补专家组已完成抽签!");
-            }
             if (evaluationSheet.getExpertNumber() == 0) {
                 throw new BaseBusinessException(500, "专家组还未完成抽签!");
             }
+            if (evaluationSheet.getAlternativeExpertNumber() != 0) {
+                throw new BaseBusinessException(500, "候补专家组已完成抽签!");
+            }
             evaluationSheet.setAlternativeExpertNumber(drawVO.getNumber());
-            evaluationSheet.setEvaluationNumber(evaluationSheet.getExpertNumber() + drawVO.getNumber());
             //设置抽签完成时间
-            evaluationSheet.setDrawTime(DateUtil.format(new Date(), "YYYY-MM-DD"));
+            evaluationSheet.setDrawTime(DateUtil.format(new Date(), "YYYY-MM-dd"));
             //设置抽签完成状态
             evaluationSheet.setDrawStatus(1);
         }
@@ -167,7 +187,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         //获取随机数
         Set<Integer> randomIntSet = new HashSet<>();
         while (randomIntSet.size() != drawVO.getNumber()) {
-            int randomInt = RandomUtil.randomInt(0, userManages.size() - 1);
+            int randomInt = RandomUtil.randomInt(0, userManages.size());
             randomIntSet.add(randomInt);
         }
         ArrayList<Integer> list = new ArrayList(randomIntSet);
@@ -181,15 +201,8 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
                 sheetDetail.setParticipationStatus(1);//专家组默认参与
             }
             this.evaluationSheetDetailMapper.insert(sheetDetail);
-            ExpertVO expertVO = BeanUtil.toBean(userManage, ExpertVO.class);
-            expertVO.setExpertType(drawVO.getExpertType());
-            expertVO.setParticipationStatus(sheetDetail.getParticipationStatus());
-
-            expertVOList.add(expertVO);
         }
-        page.setRecords(getData(page.getCurrent(), page.getSize(), expertVOList));
-        page.setTotal(expertVOList.size());
-        return page;
+
     }
 
     /**
@@ -201,6 +214,12 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
      * @return
      */
     public List<ExpertVO> getData(Long currentPage, Long pageSize, List<ExpertVO> data) {
+        if (currentPage == null) {
+            currentPage = 1L;
+        }
+        if (pageSize == null) {
+            pageSize = 10L;
+        }
         long fromIndex = (currentPage - 1) * pageSize;
         if (fromIndex >= data.size()) {
             return Collections.emptyList();//空数组
@@ -218,7 +237,6 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     @Override
     public Boolean drawRebuild(String writingBatchId) {
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(writingBatchId);
-        evaluationSheet.setEvaluationNumber(0);
         evaluationSheet.setAlternativeExpertNumber(0);
         evaluationSheet.setExpertNumber(0);
         this.baseMapper.updateById(evaluationSheet);
@@ -231,13 +249,15 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
 
     @Override
     public Boolean drawGroupLeader(EvaluationSheetDetailVO detailVO) {
+        //获取组长信息
         EvaluationSheetDetail groupInfo = this.evaluationSheetDetailMapper.getGroupByEvaluationId(detailVO.getEvaluationId());
 
         if (groupInfo != null && groupInfo.getUserId().equals(detailVO.getUserId())) {
             throw new BaseBusinessException(500, "已是参评专家组组长!");
         }
         if (groupInfo != null && !groupInfo.getUserId().equals(detailVO.getUserId())) {
-            throw new BaseBusinessException(500, "参评专家组已有组长!");
+            groupInfo.setGroupLeader(0);
+            this.evaluationSheetDetailMapper.updateById(groupInfo);
         }
         EvaluationSheetDetail detail = this.evaluationSheetDetailMapper.getByEvaluationIdAndUserId(detailVO.getEvaluationId(), detailVO.getUserId());
         detail.setGroupLeader(1);
@@ -262,6 +282,8 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         if (evaluationCount <= evaluationSheet.getExpertNumber()) {
             EvaluationSheetDetail detail = this.evaluationSheetDetailMapper.getByEvaluationIdAndUserId(detailVO.getEvaluationId(), detailVO.getUserId());
             detail.setParticipationStatus(1);
+            detail.setExpertType(1);
+            this.evaluationSheetDetailMapper.updateById(detail);
         } else {
             throw new BaseBusinessException(500, "参评专家组已满!");
         }
@@ -271,7 +293,16 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     @Override
     public Boolean releaseEvaluation(EvaluationReleaseVO evaluationReleaseVO) {
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(evaluationReleaseVO.getWritingBatchId());
+        if (this.appraiseService.getByWritingBatchId(evaluationSheet.getWritingBatchId()) != null) {
+            throw new BaseBusinessException(400, "已发布,不能重复发布!");
+        }
         int evaluationCount = this.evaluationSheetDetailMapper.selectEvaluationCount(evaluationSheet.getEvaluationId());
+        if (evaluationSheet.getDrawStatus() == 0) {
+            throw new BaseBusinessException(500, "行文批次号:" + evaluationSheet.getWritingBatchId() + "未抽签,不许发布");
+        }
+        if (evaluationSheet.getExpertNumber() == 0) {
+            throw new BaseBusinessException(500, "行文批次号:" + evaluationSheet.getWritingBatchId() + "参评专家至少一人!");
+        }
         if (evaluationCount != evaluationSheet.getExpertNumber()) {
             throw new BaseBusinessException(500, "行文批次号:" + evaluationSheet.getWritingBatchId() + "参评专家组人数未达到!");
         }
@@ -287,17 +318,18 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         String year = now.get(Calendar.YEAR) + "";
         int month = now.get(Calendar.DAY_OF_MONTH);
         String m = month < 10 ? "0" + month : String.valueOf(month);
-        Integer appralseNumber = appraiseService.getAppralseNumber(year + "-" + m);
+        Integer appraiseNumber = appraiseService.getAppraiseNumber(year + "-" + m);
         //添加到鉴定信息表
         for (String reportId : reportIds) {
-            appralseNumber = appralseNumber + 1;
+            appraiseNumber = appraiseNumber + 1;
             Appraise appraise = new Appraise();
             appraise.setWritingBatchId(evaluationReleaseVO.getWritingBatchId());
-            appraise.setAppralseStatus("0");
+            appraise.setAppraiseStatus(0);
             appraise.setReportId(reportId);
-            appraise.setAppralseNumber(String.format("%04d", appralseNumber));//认定编号
+            appraise.setAppraiseNumber(String.format("%04d", appraiseNumber));//认定编号
             appraiseService.save(appraise);
         }
+
         List<UserManage> userManages = userManageService.listByIds(userIds);
         try {
             FileInfoVO fileInfoVO = wordBuild(userManages, evaluationReleaseVO);
@@ -327,7 +359,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     public void updateCompleteStatus(String writingBatchId) {
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(writingBatchId);
         evaluationSheet.setCompleteStatus(1);
-        evaluationSheet.setCycleTime(DateUtil.format(DateUtil.parse(evaluationSheet.getCreatedTime()), "YYY-MM-DD") + " - " + DateUtil.format(new Date(), "YYY-MM-DD"));
+        evaluationSheet.setCycleTime(DateUtil.format(DateUtil.parse(evaluationSheet.getCreatedTime()), "YYY-MM-dd") + " -- " + DateUtil.format(new Date(), "YYY-MM-dd"));
         this.updateById(evaluationSheet);
     }
 
@@ -357,15 +389,17 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
 
     @Override
     @Transient
-    public List<ExpertVO> drawInfo(String writingBatchId) {
-        EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(writingBatchId);
+    public Map<String, IPage<ExpertVO>> drawInfo(DrawInfoVO drawInfoVO) {
+        EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(drawInfoVO.getWritingBatchId());
         if (evaluationSheet == null) {
             throw new BaseBusinessException(400, "行文编号不存在");
         }
         QueryWrapper<EvaluationSheetDetail> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(EvaluationSheetDetail.EVALUATION_ID, evaluationSheet.getEvaluationId());
+        queryWrapper.isNull(EvaluationSheetDetail.REMARK);
         List<EvaluationSheetDetail> details = this.evaluationSheetDetailMapper.selectList(queryWrapper);
-        List<ExpertVO> expertVOList = new ArrayList<>();
+        List<ExpertVO> expertVOList = new ArrayList<>();//参评专家
+        List<ExpertVO> expertList = new ArrayList<>();//备选专家
         for (EvaluationSheetDetail detail : details) {
             UserManage userManage = userManageService.getById(detail.getUserId());
             ExpertVO expertVO = BeanUtil.toBean(userManage, ExpertVO.class);
@@ -373,9 +407,36 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             expertVO.setGroupLeader(detail.getGroupLeader());
             expertVO.setParticipationStatus(detail.getParticipationStatus());
             expertVO.setRemark(detail.getRemark());
-            expertVOList.add(expertVO);
+            if (detail.getExpertType() == 1) {
+                expertVOList.add(expertVO);
+            } else {
+                expertList.add(expertVO);
+            }
         }
-        return expertVOList;
+        Map<String, IPage<ExpertVO>> iPages = new HashMap<>();
+        if (drawInfoVO.getExpertType() == null || drawInfoVO.getExpertType() == 0) {
+            IPage<ExpertVO> page = drawInfoVO.getPage();
+            page.setRecords(getData(page.getCurrent(), page.getSize(), expertVOList));
+            page.setTotal(expertVOList.size());
+            iPages.put("ExpertList", page);
+            IPage<ExpertVO> ExpertVOPage = drawInfoVO.getPage();
+            ExpertVOPage.setRecords(getData(page.getCurrent(), page.getSize(), expertList));
+            ExpertVOPage.setTotal(expertVOList.size());
+            iPages.put("UnExpertList", ExpertVOPage);
+        }
+        if (drawInfoVO.getExpertType() == 1) {
+            IPage<ExpertVO> page = drawInfoVO.getPage();
+            page.setRecords(getData(page.getCurrent(), page.getSize(), expertVOList));
+            page.setTotal(expertVOList.size());
+            iPages.put("ExpertList", page);
+        }
+        if (drawInfoVO.getExpertType() == 2) {
+            IPage<ExpertVO> ExpertVOPage = drawInfoVO.getPage();
+            ExpertVOPage.setRecords(getData(ExpertVOPage.getCurrent(), ExpertVOPage.getSize(), expertList));
+            ExpertVOPage.setTotal(expertVOList.size());
+            iPages.put("UnExpertList", ExpertVOPage);
+        }
+        return iPages;
     }
 
     public FileInfoVO wordBuild(List<UserManage> userManages, EvaluationReleaseVO evaluationReleaseVO) throws IOException {

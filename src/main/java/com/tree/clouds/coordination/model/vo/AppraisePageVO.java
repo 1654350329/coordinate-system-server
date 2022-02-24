@@ -9,8 +9,8 @@ public class AppraisePageVO extends PageParam {
     @ApiModelProperty(value = "行文批次号")
     private String writingBatchId;
 
-    @ApiModelProperty(value = "认定编号")
-    private String appralseNumber;
+    @ApiModelProperty(value = "认定对象")
+    private String identifiedName;
 
     @ApiModelProperty(value = "科別")
     private String category;
@@ -20,6 +20,12 @@ public class AppraisePageVO extends PageParam {
 
     @ApiModelProperty(value = "联系方式")
     private String phoneNumber;
+
+    @ApiModelProperty(value = "鉴定状态")
+    private String appraiseStatus;
+
+    @ApiModelProperty(value = "性别")
+    private String sex;
 
     @ApiModelProperty(value = "任务类型")
     private String taskType;

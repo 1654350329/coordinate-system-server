@@ -28,16 +28,18 @@
     <sql id="Base_Column_List">
         USER_ID, USER_NAME, PHONE_NUMBER, UNIT, SEX, JOB, TITLE_GRADE, ACCOUNT, PASSWORD, WECHAT_AUTHORIZATION, RECEIVE_NOTICE_STATUS, ACCOUNT_STATUS, REMARK, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
-    <select id="userManagePage" resultType="com.tree.clouds.coordination.model.vo.UserManageVO">
-        select b.* from group_user a
-        left join user_manage b on a.user_id=b.user_id
-        where 1=1 and a.group_id=#{userManagePageVO.groupId}
-
+    <select id="userManagePage" resultType="com.tree.clouds.coordination.model.bo.UserManageBO">
+        select a.*,b.group_id from user_manage a
+        left join group_user b on a.user_id=b.user_id
+        where 1=1 and a.del=0
+        <if test="userManagePageVO.groupId != null and userManagePageVO.groupId != ''">
+            and b.group_id =#{userManagePageVO.groupId}
+        </if>
         <if test="userManagePageVO.account != null and userManagePageVO.account != ''">
-            and b.account like "%"#{userManagePageVO.account}"%"
+            and a.account like "%"#{userManagePageVO.account}"%"
         </if>
         <if test="userManagePageVO.userName != null and userManagePageVO.userName != ''">
-            and b.user_name like "%"#{userManagePageVO.userName}"%"
+            and a.user_name like "%"#{userManagePageVO.userName}"%"
         </if>
     </select>
     <select id="listByMenuId" resultType="com.tree.clouds.coordination.model.entity.UserManage">
@@ -45,6 +47,14 @@
             LEFT JOIN role_user  b on a.USER_ID=b.USER_ID
             LEFT JOIN sys_role_menu c on b.ROLE_ID=c.role_id
             where c.menu_id=#{menuId}
+    </select>
+    <select id="isExist" resultType="com.tree.clouds.coordination.model.entity.UserManage">
+        select * from user_manage where account=#{account} or PHONE_NUMBER=#{phone}
+    </select>
+    <select id="listByRoleId" resultType="com.tree.clouds.coordination.model.entity.UserManage">
+         select DISTINCT a.* from user_manage a
+            LEFT JOIN role_user  b on a.USER_ID=b.USER_ID
+            where b.role_id=#{roleId}
     </select>
 
 </mapper>

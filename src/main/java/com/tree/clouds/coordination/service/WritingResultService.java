@@ -8,4 +8,6 @@ public interface WritingResultService {
     IPage<WritingResultBO> writingResultPage(WritingResultPageVO writingResultPageVO);
 
     void writingBuild(String writingBatchId);
+
+    String getWritingFile(String id);
 }

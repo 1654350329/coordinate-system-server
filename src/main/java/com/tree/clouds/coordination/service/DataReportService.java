@@ -6,6 +6,7 @@ import com.tree.clouds.coordination.model.bo.DataReportBO;
 import com.tree.clouds.coordination.model.entity.DataReport;
 import com.tree.clouds.coordination.model.vo.DataReportPageVO;
 import com.tree.clouds.coordination.model.vo.UpdateDataReportVO;
+import com.tree.clouds.coordination.model.vo.WritingBatchVO;
 
 import java.util.List;
 
@@ -47,6 +48,14 @@ public interface DataReportService extends IService<DataReport> {
      * @return
      */
     IPage<DataReportBO> dataReportPage(DataReportPageVO dataReportPageVO);
+
+    /**
+     * 评估准备条件分页查询
+     *
+     * @param writingBatchVO
+     * @return
+     */
+    IPage<DataReportBO> dataReportPage(WritingBatchVO writingBatchVO);
 
     /**
      * 修改审核进度

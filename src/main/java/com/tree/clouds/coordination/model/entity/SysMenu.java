@@ -1,6 +1,8 @@
 package com.tree.clouds.coordination.model.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,11 +25,12 @@ import java.util.List;
 public class SysMenu extends BaseEntity {
 
     @ApiModelProperty("菜单id")
-    private Long id;
+    @TableId(value = "id", type = IdType.UUID)
+    private String id;
 
     @NotNull(message = "上级菜单不能为空")
     @ApiModelProperty("上级菜单 父菜单ID，一级菜单为0")
-    private Long parentId;
+    private String parentId;
 
     @NotBlank(message = "菜单名称不能为空")
     @ApiModelProperty("菜单名称")

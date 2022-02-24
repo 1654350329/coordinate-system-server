@@ -6,11 +6,12 @@ import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.entity.GroupManage;
 import com.tree.clouds.coordination.model.vo.GroupManagePageVO;
-import com.tree.clouds.coordination.model.vo.PublicIdReqVO;
+import com.tree.clouds.coordination.model.vo.PublicIdsReqVO;
 import com.tree.clouds.coordination.service.GroupManageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,6 +37,7 @@ public class GroupManageController {
     @PostMapping("/groupManagePage")
     @ApiOperation(value = "分组管理模块分页查询")
     @Log("分组管理模块分页查询")
+    @PreAuthorize("hasAuthority('group:manage:list')")
     public RestResponse<IPage<GroupManage>> groupManagePage(@RequestBody GroupManagePageVO groupManagePageVO) {
         IPage<GroupManage> page = groupManageService.groupManagePage(groupManagePageVO);
         return RestResponse.ok(page);
@@ -44,6 +46,7 @@ public class GroupManageController {
     @PostMapping("/addGroupRole")
     @ApiOperation(value = "添加分组")
     @Log("添加分组")
+    @PreAuthorize("hasAuthority('group:manage:add')")
     public RestResponse<Boolean> addGroupRole(@RequestBody GroupManage groupRole) {
         groupManageService.save(groupRole);
         return RestResponse.ok(true);
@@ -52,6 +55,7 @@ public class GroupManageController {
     @PostMapping("/updateGroupRole")
     @ApiOperation(value = "修改分组")
     @Log("修改分组")
+    @PreAuthorize("hasAuthority('group:manage:update')")
     public RestResponse<Boolean> updateGroupRole(@RequestBody GroupManage groupRole) {
         groupManageService.updateById(groupRole);
         return RestResponse.ok(true);
@@ -60,8 +64,9 @@ public class GroupManageController {
     @PostMapping("/deleteGroupRole")
     @ApiOperation(value = "刪除分组")
     @Log("刪除分组")
-    public RestResponse<Boolean> deleteGroupRole(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
-        groupManageService.removeById(publicIdReqVO.getId());
+    @PreAuthorize("hasAuthority('group:manage:delete')")
+    public RestResponse<Boolean> deleteGroupRole(@Validated @RequestBody PublicIdsReqVO publicIdReqVO) {
+        groupManageService.deleteGroupRole(publicIdReqVO.getIds());
         return RestResponse.ok(true);
     }
 }

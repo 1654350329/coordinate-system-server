@@ -1,12 +1,15 @@
 package com.tree.clouds.coordination.utils;
 
 import com.aspose.words.Document;
+import com.aspose.words.ImageSaveOptions;
 import com.aspose.words.License;
+import com.aspose.words.SaveFormat;
 import org.aspectj.weaver.ast.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.UUID;
 
 
 /**
@@ -16,7 +19,8 @@ import java.io.InputStream;
 public class Word2PdfUtil {
 
     public static void main(String[] args) {
-        Word2PdfUtil.doc2("D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.docx", "D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.pdf", 40);
+        //Word2PdfUtil.doc2("D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.docx", "D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.pdf", 40);
+        Word2PdfUtil.doc2Img("D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.docx", "D:\\");
     }
 
     public static boolean getLicense() {
@@ -50,5 +54,37 @@ public class Word2PdfUtil {
         }
     }
 
+    /**
+     * 文档转图片
+     *
+     * @param inPath 传入文档地址
+     * @param outDir 输出的图片文件夹地址
+     */
+    public static String doc2Img(String inPath, String outDir) {
+        String filePath = null;
+        try {
+            if (!getLicense()) {
+                throw new Exception("com.aspose.words lic ERROR!");
+            }
+            long old = System.currentTimeMillis();
+            // word文档
+            Document doc = new Document(inPath);
+            // 支持RTF HTML,OpenDocument, PDF,EPUB, XPS转换
+            ImageSaveOptions options = new ImageSaveOptions(SaveFormat.PNG);
+            int pageCount = doc.getPageCount();
 
+            for (int i = 0; i < pageCount; i++) {
+                filePath = outDir + "/" + UUID.randomUUID() + ".png";
+                File file = new File(filePath);
+                FileOutputStream os = new FileOutputStream(file);
+                options.setPageIndex(i);
+                doc.save(os, options);
+                os.close();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return filePath;
+    }
 }

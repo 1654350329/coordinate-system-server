@@ -5,16 +5,20 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.entity.RoleManage;
-import com.tree.clouds.coordination.model.vo.PublicIdReqVO;
+import com.tree.clouds.coordination.model.vo.DistributeRoleVO;
+import com.tree.clouds.coordination.model.vo.PublicIdsReqVO;
 import com.tree.clouds.coordination.model.vo.RoleManagePageVO;
 import com.tree.clouds.coordination.service.RoleManageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 /**
  * <p>
@@ -34,6 +38,7 @@ public class RoleManageController {
     @PostMapping("/roleManagePage")
     @ApiOperation(value = "角色模块分页查询")
     @Log("角色模块分页查询")
+    @PreAuthorize("hasAuthority('role:manage:list')")
     public RestResponse<IPage<RoleManage>> roleManagePage(@RequestBody RoleManagePageVO roleManagePageVO) {
         IPage<RoleManage> page = roleManageService.roleManagePage(roleManagePageVO);
         return RestResponse.ok(page);
@@ -49,7 +54,9 @@ public class RoleManageController {
     @PostMapping("/addRole")
     @ApiOperation(value = "添加角色")
     @Log("添加角色")
+    @PreAuthorize("hasAuthority('role:manage:add')")
     public RestResponse<Boolean> addRole(@RequestBody RoleManage roleManage) {
+        roleManage.setRoleCode(UUID.randomUUID().toString());
         roleManageService.save(roleManage);
         return RestResponse.ok(true);
     }
@@ -57,6 +64,7 @@ public class RoleManageController {
     @PostMapping("/updateRole")
     @ApiOperation(value = "修改角色")
     @Log("修改角色")
+    @PreAuthorize("hasAuthority('role:manage:update')")
     public RestResponse<Boolean> updateRole(@RequestBody RoleManage roleManage) {
         roleManageService.updateById(roleManage);
         return RestResponse.ok(true);
@@ -65,9 +73,21 @@ public class RoleManageController {
     @PostMapping("/deleteRole")
     @ApiOperation(value = "刪除角色")
     @Log("刪除角色")
-    public RestResponse<Boolean> deleteRole(@RequestBody PublicIdReqVO publicIdReqVO) {
-        roleManageService.removeById(publicIdReqVO.getId());
+    @PreAuthorize("hasAuthority('role:manage:delete')")
+    public RestResponse<Boolean> deleteRole(@RequestBody PublicIdsReqVO publicIdReqVO) {
+        roleManageService.deleteRole(publicIdReqVO.getIds());
         return RestResponse.ok(true);
     }
+
+    @PostMapping("/distributeRole")
+    @ApiOperation(value = "配置权限")
+    @Log("配置权限")
+    @PreAuthorize("hasAuthority('role:manage:distribute')")
+    public RestResponse<Boolean> distributeRole(@RequestBody DistributeRoleVO distributeRoleVO) {
+        roleManageService.distributeRole(distributeRoleVO);
+        return RestResponse.ok(true);
+    }
+
+
 }
 

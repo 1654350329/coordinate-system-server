@@ -21,13 +21,14 @@
         Data_examine_ID, data_report_id, examine_status, examine_describe, examine_time, examine_user, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME
     </sql>
     <select id="dataExaminePage" resultType="com.tree.clouds.coordination.model.bo.DataExamineBo">
-        select a.Data_examine_ID,a.examine_time,c.user_name as examine_user, b.*
+        select DISTINCT a.Data_examine_ID,a.examine_time,c.user_name as examine_user, b.*
         from data_examine a
         LEFT JOIN data_report b on a.report_ID = b.REPORT_ID
         LEFT JOIN user_manage c on c.user_id = a.examine_user
+        LEFT JOIN writing_batch d on d.report_ID = b.report_ID
         where 1=1
         <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
-            and b.IDENTIFIED_NUMBER=#{dataReportPageVO.identifiedName}
+            and b.IDENTIFIED_name like CONCAT('%',#{dataReportPageVO.identifiedName},'%')
         </if>
         <if test="dataReportPageVO.category != null and dataReportPageVO.category !=''">
             and b.CATEGORY=#{dataReportPageVO.category}
@@ -36,7 +37,7 @@
             and b.SORT=#{dataReportPageVO.sort}
         </if>
         <if test="dataReportPageVO.unitName != null  and dataReportPageVO.unitName != ''">
-            and b.UNIT_NAME=#{dataReportPageVO.unitName}
+            and b.UNIT_NAME like "%"#{dataReportPageVO.unitName}"%"
         </if>
         <if test="dataReportPageVO.sickTimeStart != null and dataReportPageVO.sickTimeStart != ''">
             and b.SICK_TIME >= #{dataReportPageVO.sickTimeStart}
@@ -57,7 +58,7 @@
             and b.STATUS =#{dataReportPageVO.status}
         </if>
         <if test="dataReportPageVO.examineProgress != null">
-            and b.EXAMINE_PROGRESS =#{dataReportPageVO.examineProgress}
+            and b.EXAMINE_PROGRESS =#{dataReportPageVO.examineProgress} and d.WRITING_BATCH_ID is null
         </if>
         <if test="dataReportPageVO.receivingTimeStart != null and dataReportPageVO.receivingTimeStart != ''">
             and b.RECEIVING_TIME &lt;= #{dataReportPageVO.receivingTimeStart}

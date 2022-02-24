@@ -2,7 +2,10 @@ package com.tree.clouds.coordination.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.tree.clouds.coordination.model.entity.EvaluationSheetDetail;
+import com.tree.clouds.coordination.model.vo.ExpertDetailVO;
+import com.tree.clouds.coordination.model.vo.WritingBatchVO;
 
 import java.util.List;
 
@@ -69,4 +72,5 @@ public interface EvaluationSheetDetailMapper extends BaseMapper<EvaluationSheetD
         return this.selectOne(queryWrapper);
     }
 
+    IPage<ExpertDetailVO> expertDetailPage(IPage<WritingBatchVO> page, WritingBatchVO writingBatchVO);
 }

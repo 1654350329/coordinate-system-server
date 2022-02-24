@@ -10,10 +10,10 @@ import com.tree.clouds.coordination.service.OperationLogService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * <p>
@@ -33,9 +33,17 @@ public class OperationLogController {
     @PostMapping("/operationLogPage")
     @ApiOperation(value = "操作日志分页查询")
     @Log("操作日志分页查询")
+    @PreAuthorize("hasAuthority('operation:log:list')")
     public RestResponse<IPage<OperationLog>> operationLogPage(@RequestBody OperationLogPageVO operationLogPageVO) {
         IPage<OperationLog> page = operationLogService.operationLogPage(operationLogPageVO);
         return RestResponse.ok(page);
+    }
+
+    @GetMapping("/exportOperationLog")
+    @ApiOperation(value = "操作日志导出")
+    @Log("操作日志导出")
+    public void exportOperationLog(OperationLogPageVO operationLogPageVO, HttpServletResponse response) {
+        operationLogService.exportOperationLog(operationLogPageVO, response);
     }
 }
 

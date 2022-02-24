@@ -23,14 +23,14 @@
         , WRITING_BATCH_ID, APPRAISE_TIME, APPRAISE_GRADE, GRADING_PRINCIPLE, APPRAISE_RESULT, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="appraisePage" resultType="com.tree.clouds.coordination.model.bo.AppraiseBO">
-        select b.*,a.WRITING_BATCH_ID,a.APPRALSE_NUMBER,a.APPRALSE_STATUS,a.APPRAISE_ID from appraise a
+        select b.*,a.WRITING_BATCH_ID,a.APPRAISE_NUMBER,a.APPRAISE_STATUS,a.APPRAISE_ID from appraise a
         left JOIN data_report b on a.report_ID=b.report_ID
         where 1=1
         <if test="appraisePageVO.writingBatchId != null and appraisePageVO.writingBatchId !=''">
             and a.WRITING_BATCH_ID=#{appraisePageVO.writingBatchId}
         </if>
-        <if test="appraisePageVO.appralseNumber != null and appraisePageVO.appralseNumber !=''">
-            and a.appralse_number=#{appraisePageVO.appralseNumber}
+        <if test="appraisePageVO.identifiedName != null and appraisePageVO.identifiedName !=''">
+            and b.identified_Name like CONCAT('%,',#{appraisePageVO.identifiedName},'%')
         </if>
         <if test="appraisePageVO.category != null and appraisePageVO.category !=''">
             and b.category=#{appraisePageVO.category}
@@ -41,14 +41,20 @@
         <if test="appraisePageVO.phoneNumber != null and appraisePageVO.phoneNumber !=''">
             and b.phone_number=#{appraisePageVO.phoneNumber}
         </if>
+        <if test="appraisePageVO.appraiseStatus != null and appraisePageVO.appraiseStatus !=''">
+            and a.appraise_Status=#{appraisePageVO.appraiseStatus}
+        </if>
+        <if test="appraisePageVO.sex != null and appraisePageVO.sex !=''">
+            and b.sex=#{appraisePageVO.sex}
+        </if>
         <if test="appraisePageVO.taskType != null and appraisePageVO.taskType !=''">
-            and b.task_type=#{appraisePageVO.taskType}
+            and b.task_Type=#{appraisePageVO.taskType}
         </if>
     </select>
-    <select id="getAppralseNumber" resultType="java.lang.String">
-        select APPRALSE_NUMBER
+    <select id="getAppraiseNumber" resultType="java.lang.String">
+        select APPRAISE_NUMBER
         from appraise
-        where CREATED_TIME like #{time}"%"
+        where CREATED_TIME like CONCAT(#{time},'%')
         ORDER BY CREATED_TIME DESC limit 1
     </select>
     <select id="expertGroupInfo" resultType="com.tree.clouds.coordination.model.vo.ExpertGroupInfo">

@@ -14,11 +14,11 @@ public class ReviewSignatureBO extends DataReport {
     private String writingBatchId;
 
     @ApiModelProperty(value = "认定编号")
-    private String appralseNumber;
+    private String appraiseNumber;
 
     @ApiModelProperty(value = "审签状态(0待审签 1 已审签)")
-    private String reviewStatus;
+    private Integer reviewStatus;
 
     @ApiModelProperty(value = "审签结果(0反驳 1 同意)")
-    private String reviewResult;
+    private Integer reviewResult;
 }

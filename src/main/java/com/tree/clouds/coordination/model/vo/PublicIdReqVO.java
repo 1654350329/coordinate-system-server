@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @Data
 @Accessors(chain = true)
-@ApiModel(value = "PublicIdReqVO", description = "通用批量请求VO")
+@ApiModel(value = "PublicIdReqVO", description = "通用请求VO")
 public class PublicIdReqVO implements Serializable {
     private static final long serialVersionUID = 1L;
 

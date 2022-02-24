@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 public class AppraiseVO {
@@ -19,15 +21,15 @@ public class AppraiseVO {
     @ApiModelProperty(value = "等级")
     private String appraiseGrade;
 
-    @NotBlank(message = "等级原则不能为空")
-    @ApiModelProperty(value = "等级原则")
-    private String gradingPrinciple;
+    @NotNull(message = "伤残病情况不能为空")
+    @ApiModelProperty(value = "伤残病情况")
+    private String sickCondition;
 
     @NotBlank(message = "最终等级(结论)不能为空")
     @ApiModelProperty(value = "最终等级(结论)")
     private String appraiseResult;
 
-    @NotBlank(message = "文件不能为空")
+    @NotNull(message = "文件不能为空")
     @ApiModelProperty(value = "文件")
-    private FileInfoVO fileInfoVO;
+    private List<FileInfoVO> fileInfoVO;
 }

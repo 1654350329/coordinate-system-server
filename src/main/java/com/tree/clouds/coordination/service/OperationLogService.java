@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.tree.clouds.coordination.model.entity.OperationLog;
 import com.tree.clouds.coordination.model.vo.OperationLogPageVO;
 
+import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * <p>
@@ -17,4 +19,6 @@ import com.tree.clouds.coordination.model.vo.OperationLogPageVO;
 public interface OperationLogService extends IService<OperationLog> {
 
     IPage<OperationLog> operationLogPage(OperationLogPageVO operationLogPageVO);
+
+    void exportOperationLog(OperationLogPageVO operationLogPageVO, HttpServletResponse response);
 }

@@ -112,6 +112,7 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         Word2PdfUtil.doc2(file.getAbsolutePath(), html, SaveFormat.HTML);
         try {
             FileInputStream fileInputStream = new FileInputStream(new File(html));
+
             DownloadFile.downloadFile(fileInputStream, file.getName(), response);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

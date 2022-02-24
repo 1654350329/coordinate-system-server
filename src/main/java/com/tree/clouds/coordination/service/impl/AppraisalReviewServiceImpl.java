@@ -13,6 +13,7 @@ import com.tree.clouds.coordination.model.vo.AppraisalReviewVO;
 import com.tree.clouds.coordination.service.AppraisalReviewService;
 import com.tree.clouds.coordination.service.DataReportService;
 import com.tree.clouds.coordination.service.ReviewSignatureService;
+import com.tree.clouds.coordination.utils.BaseBusinessException;
 import com.tree.clouds.coordination.utils.LoginUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,39 +46,62 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
     @Override
     public Boolean addAppraisalReview(AppraisalReviewVO appraisalReviewVO) {
         AppraisalReview review = this.getById(appraisalReviewVO.getAppraiseResultId());
+        if (review.getAppraisalReviewStatus().equals(2)) {
+            throw new BaseBusinessException(400, "已完成鉴定,不允许修改!");
+        }
         AppraisalReview appraisalReview = new AppraisalReview();
         appraisalReview.setAppraiseResultId(appraisalReviewVO.getAppraiseResultId());
+        appraisalReview.setRemark(appraisalReviewVO.getRemark());//最终意见
+        appraisalReview.setAppraisalReviewResult(appraisalReviewVO.getAppraisalReviewResult());
         if (appraisalReviewVO.getAppraisalReviewResult() == 1) {
             //反驳打回
-            if (appraisalReviewVO.getAppraisalReviewStatus().equals("1")) {
+            if (review.getAppraisalReviewStatus().equals(0)) {
                 this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_FIVE, null);
                 appraisalReview.setAppraisalReviewStatus(1);
                 appraisalReview.setAppraisalReviewTimeOne(appraisalReviewVO.getAppraisalReviewTime());
                 appraisalReview.setAppraisalReviewUserOne(LoginUserUtil.getUserId());
                 appraisalReview.setAppraisalReviewResultOne(appraisalReviewVO.getAppraisalReviewResult());
+                appraisalReview.setRemarkOne(appraisalReviewVO.getRemark());
                 this.updateById(appraisalReview);
             }
-            if (appraisalReviewVO.getAppraisalReviewStatus().equals("2")) {
+            if (review.getAppraisalReviewStatus().equals(1)) {
+                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_SIX, null);
+                appraisalReview.setAppraisalReviewStatus(2);
+                appraisalReview.setAppraisalReviewTimeTwo(appraisalReviewVO.getAppraisalReviewTime());
+                appraisalReview.setAppraisalReviewResultTwo(appraisalReviewVO.getAppraisalReviewResult());
+                appraisalReview.setAppraisalReviewUserTwo(LoginUserUtil.getUserId());
+                appraisalReview.setRemarkTwo(appraisalReviewVO.getRemark());
+                this.updateById(appraisalReview);
+                //添加到审签
+                ReviewSignature reviewSignature = new ReviewSignature();
+                reviewSignature.setWritingBatchId(review.getWritingBatchId());
+                reviewSignature.setReportId(review.getReportId());
+                reviewSignature.setAppraiseNumber(review.getAppraiseNumber());
+                reviewSignature.setReviewStatus(0);
+                reviewSignatureService.save(reviewSignature);
+            }
+        } else {
+            if (appraisalReviewVO.getAppraisalReviewResult() == 0) {
+                appraisalReview.setAppraisalReviewStatus(1);
+                appraisalReview.setAppraisalReviewTimeOne(appraisalReviewVO.getAppraisalReviewTime());
+                appraisalReview.setAppraisalReviewUserOne(LoginUserUtil.getUserId());
+                appraisalReview.setAppraisalReviewResultOne(appraisalReviewVO.getAppraisalReviewResult());
+                appraisalReview.setRemarkOne(appraisalReviewVO.getRemark());
+            }
+            if (review.getAppraisalReviewStatus().equals(1)) {
                 this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_SIX, null);
                 review.setAppraisalReviewStatus(2);
                 appraisalReview.setAppraisalReviewTimeTwo(appraisalReviewVO.getAppraisalReviewTime());
                 appraisalReview.setAppraisalReviewResultTwo(appraisalReviewVO.getAppraisalReviewResult());
                 appraisalReview.setAppraisalReviewUserTwo(LoginUserUtil.getUserId());
-                this.updateById(review);
-                //添加到审签
-                ReviewSignature reviewSignature = new ReviewSignature();
-                reviewSignature.setWritingBatchId(review.getWritingBatchId());
-                reviewSignature.setReportId(review.getReportId());
-                reviewSignature.setAppralseNumber(review.getAppralseNumber());
-                reviewSignature.setReviewStatus("0");
-                reviewSignatureService.save(reviewSignature);
+                appraisalReview.setRemarkTwo(appraisalReviewVO.getRemark());
             }
-        } else {
             //反驳打回初审状态
             this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, appraisalReviewVO.getRemark());
             appraisalReview.setAppraisalReviewStatus(0);
-            appraisalReview.setRemark(appraisalReviewVO.getRemark());
+
             this.updateById(appraisalReview);
+
         }
         return true;
     }

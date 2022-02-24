@@ -9,8 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
-
 /**
  * <p>
  * 认定审签
@@ -23,7 +21,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @TableName("review_signature")
 @ApiModel(value = "ReviewSignature对象", description = "认定审签")
-public class ReviewSignature extends BaseEntity implements Serializable {
+public class ReviewSignature extends BaseEntity {
 
     public static final String REVIEW_AND_SIGNATURE_ID = "REVIEW_AND_SIGNATURE_ID";
     public static final String WRITING_BATCH_ID = "WRITING_BATCH_ID";
@@ -43,8 +41,8 @@ public class ReviewSignature extends BaseEntity implements Serializable {
     private String writingBatchId;
 
     @ApiModelProperty(value = "认定编号")
-    @TableField("appralse_number")
-    private String appralseNumber;
+    @TableField("appraise_number")
+    private String appraiseNumber;
 
     @ApiModelProperty(value = "上报主键")
     @TableField(value = REPORT_ID)
@@ -56,11 +54,11 @@ public class ReviewSignature extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "审签状态(0待审签 1 已审签)")
     @TableField(REVIEW_STATUS)
-    private String reviewStatus;
+    private Integer reviewStatus;
 
     @ApiModelProperty(value = "审签结果(0反驳 1 同意)")
     @TableField(REVIEW_RESULT)
-    private String reviewResult;
+    private Integer reviewResult;
 
     @ApiModelProperty(value = "审签意见")
     @TableField("remark")

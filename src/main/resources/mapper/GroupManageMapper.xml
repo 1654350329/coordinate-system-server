@@ -18,9 +18,9 @@
         GROUP_ID, GROUP_NAME, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="groupManagePage" resultType="com.tree.clouds.coordination.model.entity.GroupManage">
-        select * from role_manage where 1=1
+        select * from group_manage where 1=1
         <if test="groupManagePageVO.groupName !=null and groupManagePageVO.groupName !=''">
-            and group_name like "%"#{groupManagePageVO.groupName}"%"
+            and GROUP_NAME like "%"#{groupManagePageVO.groupName}"%"
         </if>
     </select>
 

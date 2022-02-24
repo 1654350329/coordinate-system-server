@@ -51,11 +51,12 @@ public class DataReportController {
     @PostMapping("/dataList")
     @ApiOperation(value = "资料上报数据字典")
     @Log("资料上报数据字典")
-    @PreAuthorize("hasAuthority('data:report:list')")
+//    @PreAuthorize("hasAuthority('data:report:list')")
     public RestResponse<Map> dataList() {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("category", Arrays.asList("骨科", "烧伤科", "眼科", "呼吸科", "消化科"));
         map.put("type", Arrays.asList("委托任务", "指标任务"));
+        map.put("titleGrade", Arrays.asList("正高级", "副高级", "中级", "助理级", "员级"));
         Map<Integer, String> sortMap = new HashMap();
         sortMap.put(0, "工");
         sortMap.put(1, "病");
@@ -73,13 +74,16 @@ public class DataReportController {
         statusMap.put(0, "正常");
         statusMap.put(1, "驳回");
         map.put("status", statusMap);
+        Map<Integer, String> categoryMap = new HashMap();
+        categoryMap.put(0, "正常");
+        categoryMap.put(1, "驳回");
+        map.put("status", statusMap);
         return RestResponse.ok(map);
     }
 
     @Log("资料上报详细查询")
     @PostMapping("/getDataReportDetail")
     @ApiOperation(value = "资料上报详细查询")
-//    @PreAuthorize("hasAuthority('data:report:select')")
     public RestResponse<UpdateDataReportVO> getDataReportDetail(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
         UpdateDataReportVO dataReportDetail = dataReportService.getDataReportDetail(publicIdReqVO.getId());
         return RestResponse.ok(dataReportDetail);
@@ -106,7 +110,7 @@ public class DataReportController {
     @PostMapping("/updateDataReport")
     @ApiOperation(value = "编辑资料")
     @Log("编辑资料")
-//    @PreAuthorize("hasAuthority('data:report:update')")
+    @PreAuthorize("hasAuthority('data:report:update')")
     public RestResponse<Boolean> updateDataReport(@Validated @RequestBody UpdateDataReportVO DataReportVO) {
         dataReportService.updateDataReport(DataReportVO);
         return RestResponse.ok(true);
@@ -115,7 +119,7 @@ public class DataReportController {
     @PostMapping("/deleteDataReport")
     @ApiOperation(value = "删除资料")
     @Log("删除资料")
-//    @PreAuthorize("hasAuthority('data:report:delete')")
+    @PreAuthorize("hasAuthority('data:report:delete')")
     public RestResponse<Boolean> deleteDataReport(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
         dataReportService.deleteDataReport(publicIdReqVO.getId());
         return RestResponse.ok(true);
@@ -124,7 +128,7 @@ public class DataReportController {
     @PostMapping("/revokeReport")
     @ApiOperation(value = "撤销资料上报")
     @Log("撤销资料上报")
-//    @PreAuthorize("hasAuthority('data:report:revoke')")
+    @PreAuthorize("hasAuthority('data:report:revoke')")
     public RestResponse<Boolean> revokeReport(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
         dataReportService.revokeReport(publicIdReqVO.getId());
         return RestResponse.ok(true);

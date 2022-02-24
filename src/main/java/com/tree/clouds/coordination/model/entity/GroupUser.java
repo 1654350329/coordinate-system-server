@@ -19,8 +19,8 @@ import java.io.Serializable;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("group_role")
-@ApiModel(value = "GroupRole对象", description = "分组与角色管理中间表")
+@TableName("group_user")
+@ApiModel(value = "GroupRole对象", description = "分组与用户管理中间表")
 public class GroupUser extends BaseEntity implements Serializable {
 
     public static final String GROUP_ID = "GROUP_ID";

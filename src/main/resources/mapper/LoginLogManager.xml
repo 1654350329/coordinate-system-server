@@ -6,20 +6,20 @@
     <select id="loginLogPage" resultType="com.tree.clouds.coordination.model.entity.LoginLog">
         select * from login_log
         where 1=1
-        <if test="loginLogPageVO.userName!=null and loginLogPageVO.userName!=''">
-            account like "%"#{account}"%"
+        <if test="loginLogPageVO.account!=null and loginLogPageVO.account!=''">
+            and account like "%"#{loginLogPageVO.account}"%"
         </if>
         <if test="loginLogPageVO.ip!=null and loginLogPageVO.ip!=''">
-            ip like "%"#{ip}"%"
+            and ip like "%"#{loginLogPageVO.ip}"%"
         </if>
         <if test="loginLogPageVO.loginStartTime!=null and loginLogPageVO.loginStartTime!=''">
-            creatd_time >= #{loginStartTime}
+            and creatd_time >= #{loginLogPageVO.loginStartTime}
         </if>
         <if test="loginLogPageVO.loginEndTime!=null and loginLogPageVO.loginEndTime!=''">
-            creatd_time &lt;= #{loginEndTime}
+            and creatd_time &lt;= #{loginLogPageVO.loginEndTime}
         </if>
     </select>
     <select id="loginInfo" resultType="com.tree.clouds.coordination.model.entity.LoginLog">
-        select * from login_log where account=#{account} order by CREATED_TIME DESC limit 1
+        select * from login_log where account=#{userAccount} order by CREATED_TIME DESC limit 1
     </select>
 </mapper>

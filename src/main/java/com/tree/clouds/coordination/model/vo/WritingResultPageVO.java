@@ -9,10 +9,13 @@ public class WritingResultPageVO extends PageParam {
     private String writingBatchId;
 
     @ApiModelProperty(value = "认定对象编码")
-    private String appralseNumber;
+    private String appraiseNumber;
 
     @ApiModelProperty(value = "认定对象名称")
     private String identifiedName;
+
+    @ApiModelProperty(value = "性别")
+    private String sex;
 
     @ApiModelProperty(value = "联系方式")
     private String phoneNumber;

@@ -43,8 +43,8 @@ public class AppraisalReview extends BaseEntity implements Serializable {
     private String writingBatchId;
 
     @ApiModelProperty(value = "认定编号")
-    @TableField("appralse_number")
-    private String appralseNumber;
+    @TableField("appraise_number")
+    private String appraiseNumber;
 
     @ApiModelProperty(value = "主键")
     @TableField(value = REPORT_ID)
@@ -54,9 +54,21 @@ public class AppraisalReview extends BaseEntity implements Serializable {
     @TableField(APPRAISAL_REVIEW_STATUS)
     private Integer appraisalReviewStatus;
 
-    @ApiModelProperty(value = "复核意见")
+    @ApiModelProperty(value = "最终复核意见")
     @TableField("remark")
     private String remark;
+
+    @ApiModelProperty(value = "一核复核意见")
+    @TableField("remark_one")
+    private String remarkOne;
+
+    @ApiModelProperty(value = "二核复核意见")
+    @TableField("remark_two")
+    private String remarkTwo;
+
+    @ApiModelProperty(value = "最终结果 0失败 1成功")
+    @TableField("APPRAISAL_REVIEW_RESULT")
+    private Integer appraisalReviewResult;
 
     @ApiModelProperty(value = "二核结果")
     @TableField("APPRAISAL_REVIEW_RESULT_TWO")

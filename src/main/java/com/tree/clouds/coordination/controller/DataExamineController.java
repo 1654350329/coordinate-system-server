@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.DataExamineBo;
-import com.tree.clouds.coordination.model.vo.DataExamineVO;
+import com.tree.clouds.coordination.model.vo.DataExamineVOS;
 import com.tree.clouds.coordination.model.vo.DataReportPageVO;
 import com.tree.clouds.coordination.service.DataExamineService;
 import io.swagger.annotations.Api;
@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * <p>
@@ -38,8 +36,8 @@ public class DataExamineController {
     @PostMapping("/addDataExamine")
     @ApiOperation("审核资料可批量审核")
     @PreAuthorize("hasAuthority('data:examine:examine')")
-    public RestResponse<Boolean> addDataExamine(@RequestBody List<DataExamineVO> dataExamineVOS) {
-        dataExamineService.addDataExamine(dataExamineVOS);
+    public RestResponse<Boolean> addDataExamine(@RequestBody DataExamineVOS dataExamineVOS) {
+        dataExamineService.addDataExamine(dataExamineVOS.getDataExamineVOS());
         return RestResponse.ok(true);
     }
 

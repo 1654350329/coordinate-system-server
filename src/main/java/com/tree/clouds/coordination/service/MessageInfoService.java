@@ -21,4 +21,6 @@ public interface MessageInfoService extends IService<MessageInfo> {
     void completionMethod(String messageId, String type);
 
     void completionTime(String messageId, String time);
+
+    String getWritingFile(String reportId);
 }

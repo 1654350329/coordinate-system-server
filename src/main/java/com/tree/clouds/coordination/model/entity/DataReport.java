@@ -9,8 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
-
 /**
  * <p>
  * 资料上报
@@ -23,7 +21,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @TableName("data_report")
 @ApiModel(value = "DataReport对象", description = "资料上报")
-public class DataReport extends BaseEntity implements Serializable {
+public class DataReport extends BaseEntity {
 
     public static final String REPORT_ID = "REPORT_ID";
     public static final String TASK_TYPE = "TASK_TYPE";
@@ -123,7 +121,7 @@ public class DataReport extends BaseEntity implements Serializable {
     @TableField("status")
     private int status;
 
-    @ApiModelProperty(value = "驳回意见")
+    @ApiModelProperty(value = "驳回审核意见")
     @TableField("remark")
     private String remark;
 

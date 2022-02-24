@@ -99,7 +99,19 @@ public class DownloadFile {
         try (OutputStream out = response.getOutputStream()) {
             //获取文件名
             String filename = getEncoder(fileName, null);
+//            response.setContentType("application/x-msdownload"); //设置响应类型,此处为下载类型
+//            response.setHeader("Content-Disposition", "attachment;filename=\""+fileName+"\"");//以附件的形式打开
             //设置响应头，控制浏览器下载该文件
+            //判断浏览器代理并分别设置响应给浏览器的编码格式
+//            response.setContentType("application/vnd.ms-excel");
+//            response.addHeader("Content-Disposition" ,"attachment;filename=\"" +finalFileName+ "\"");
+//            response.addHeader("Cache-Control"," max-age=0");
+//            response.addHeader("Cache-Control", "max-age=1");
+            //设置HTTP响应头
+//            response.reset();//重置 响应头
+//            response.setContentType("application/x-download");//告知浏览器下载文件，而不是直接打开，浏览器默认为打开
+//            response.addHeader("Content-Disposition" ,"attachment;filename=\"" +finalFileName+ "\"");//下载文件的名称
+
             response.setContentType("application/octet-stream");
             response.setHeader("Access-Control-Expose-Headers", "FileName");
             response.setHeader("FileName", filename);
@@ -126,20 +138,25 @@ public class DownloadFile {
         if (ObjectUtil.isEmpty(fileName)) {
             getMsg(response, "下载文件名为空");
         }
-        try (InputStream in = new ByteArrayInputStream(bytes);
-             OutputStream out = response.getOutputStream()) {
-            //获取文件名
-            String filename = getEncoder(fileName, null);
+        //获取文件名
+        String filename = getEncoder(fileName, null);
+        try {
+            response.setContentType("application/octet-stream;charset=UTF-8");
             //设置响应头，控制浏览器下载该文件
-            response.setContentType("application/octet-stream");
-            response.setHeader("Access-Control-Expose-Headers", "FileName");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
             response.setHeader("FileName", filename);
             response.setContentLength(bytes.length);
-            IoUtil.copy(in, out);
 
+            OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
+            outputStream.write(bytes);
+            outputStream.flush();
+            outputStream.close();
+            response.flushBuffer();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
     }
 
     /**
@@ -190,5 +207,32 @@ public class DownloadFile {
             e.printStackTrace();
         }
         return encoderString.toString();
+    }
+
+    /**
+     * 将文件转换成byte数组
+     *
+     * @param tradeFile
+     * @return
+     */
+    public static byte[] File2byte(File tradeFile) {
+        byte[] buffer = null;
+        try {
+            FileInputStream fis = new FileInputStream(tradeFile);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024];
+            int n;
+            while ((n = fis.read(b)) != -1) {
+                bos.write(b, 0, n);
+            }
+            fis.close();
+            bos.close();
+            buffer = bos.toByteArray();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return buffer;
     }
 }

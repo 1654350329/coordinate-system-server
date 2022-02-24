@@ -35,6 +35,7 @@ public class MessageInfoServiceImpl extends ServiceImpl<MessageInfoMapper, Messa
             throw new BaseBusinessException(500, "已完成送达不可以修改发送方式!");
         }
         messageInfo.setCompletionMethod(type);
+        this.updateById(messageInfo);
     }
 
     @Override
@@ -42,5 +43,12 @@ public class MessageInfoServiceImpl extends ServiceImpl<MessageInfoMapper, Messa
         MessageInfo messageInfo = this.getById(messageId);
         messageInfo.setCompletionTime(time);
         messageInfo.setMessageStatus("1");
+        this.updateById(messageInfo);
+    }
+
+    @Override
+    public String getWritingFile(String reportId) {
+        return this.baseMapper.getWritingFile(reportId);
+
     }
 }

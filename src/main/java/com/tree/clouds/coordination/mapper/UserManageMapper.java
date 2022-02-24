@@ -2,9 +2,9 @@ package com.tree.clouds.coordination.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.tree.clouds.coordination.model.bo.UserManageBO;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.model.vo.UserManagePageVO;
-import com.tree.clouds.coordination.model.vo.UserManageVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -19,7 +19,11 @@ import java.util.List;
  */
 public interface UserManageMapper extends BaseMapper<UserManage> {
 
-    IPage<UserManageVO> userManagePage(IPage<UserManageVO> page, @Param("userManagePageVO") UserManagePageVO userManagePageVO);
+    IPage<UserManageBO> userManagePage(IPage<UserManageBO> page, @Param("userManagePageVO") UserManagePageVO userManagePageVO);
 
-    List<UserManage> listByMenuId(@Param("menuId") Long menuId);
+    List<UserManage> listByMenuId(@Param("menuId") String menuId);
+
+    UserManage isExist(String account, String phone);
+
+    List<UserManage> listByRoleId(@Param("roleId") String roleId);
 }

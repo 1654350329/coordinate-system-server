@@ -22,8 +22,11 @@
         , WRITING_BATCH_ID, MESSAGE_STATUS, COMPLETION_TIME, COMPLETION_METHOD, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="messageInfoPage" resultType="com.tree.clouds.coordination.model.bo.MessageInfoBO">
-        select a.* ,b.* from message_info a
+        select a.message_Id,a.writing_Batch_Id,a.message_Status,a.completion_Time,a.completion_Method,c.file_path as
+        fileId,b.*
+        from message_info a
         LEFT JOIN data_report b ON a.report_ID = b.report_ID
+        LEFT JOIN file_info c ON c.biz_id = a.message_Id
         where 1=1
         <if test="messageInfoPage.writingBatchId != null and messageInfoPage.writingBatchId != ''">
             and a.writingBatchId like "%"#{messageInfoPage.writingBatchId}"%"
@@ -52,6 +55,11 @@
         <if test="messageInfoPage.completionTimeEnd != null and messageInfoPage.completionTimeEnd != ''">
             and b.completion_time &lt;= #{messageInfoPage.completionTimeEnd}
         </if>
+    </select>
+    <select id="getWritingFile" resultType="java.lang.String">
+        select b.FILE_PATH from message_info a
+        left join file_info b on a.message_id=b.biz_id
+        where a.report_id=#{reportId}
     </select>
 
 </mapper>

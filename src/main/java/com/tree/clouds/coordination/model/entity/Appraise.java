@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
+import java.util.List;
 
 /**
  * <p>
@@ -23,12 +23,12 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @TableName("appraise")
 @ApiModel(value = "Appraise对象", description = "鉴定表")
-public class Appraise extends BaseEntity implements Serializable {
+public class Appraise extends BaseEntity {
 
     public static final String APPRAISE_ID = "APPRAISE_ID";
     public static final String WRITING_BATCH_ID = "WRITING_BATCH_ID";
     public static final String APPRAISE_TIME = "APPRAISE_TIME";
-    public static final String APPRALSE_STATUS = "APPRALSE_STATUS";
+    public static final String APPRAISE_STATUS = "APPRAISE_STATUS";
     public static final String APPRAISE_GRADE = "APPRAISE_GRADE";
     public static final String GRADING_PRINCIPLE = "GRADING_PRINCIPLE";
     public static final String APPRAISE_RESULT = "APPRAISE_RESULT";
@@ -43,16 +43,16 @@ public class Appraise extends BaseEntity implements Serializable {
     private String writingBatchId;
 
     @ApiModelProperty(value = "认定编号")
-    @TableField("appralse_number")
-    private String appralseNumber;
+    @TableField("appraise_number")
+    private String appraiseNumber;
 
     @ApiModelProperty(value = "上报主键")
     @TableField(value = REPORT_ID)
     private String reportId;
 
-    @ApiModelProperty(value = "鉴定状态")
-    @TableField(APPRALSE_STATUS)
-    private String appralseStatus;
+    @ApiModelProperty(value = "鉴定状态 0未鉴定 1已鉴定")
+    @TableField(APPRAISE_STATUS)
+    private Integer appraiseStatus;
 
     @ApiModelProperty(value = "鉴定时间")
     @TableField("APPRAISE_TIME")
@@ -70,5 +70,12 @@ public class Appraise extends BaseEntity implements Serializable {
     @TableField("APPRAISE_RESULT")
     private String appraiseResult;
 
+    @ApiModelProperty(value = "附件")
+    @TableField(exist = false)
+    private List<String> files;
+
+    @ApiModelProperty(value = "伤残情况")
+    @TableField(exist = false)
+    private String sickCondition;
 
 }

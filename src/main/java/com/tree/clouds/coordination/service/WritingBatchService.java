@@ -24,4 +24,12 @@ public interface WritingBatchService extends IService<WritingBatch> {
     List<String> getReportByWritingBatchId(String writingBatchId);
 
     void saveBatchInfo(String writingBatchId, List<String> ids);
+
+    /**
+     * 判断上报任务是否已加入待审表
+     *
+     * @param reportId
+     * @return
+     */
+    boolean getEvaluationSheetStatus(String reportId);
 }

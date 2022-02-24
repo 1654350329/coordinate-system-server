@@ -5,6 +5,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.listener.UserManagerExcelListener;
 import com.tree.clouds.coordination.mapper.SysRoleMenuMapper;
 import com.tree.clouds.coordination.mapper.UserManageMapper;
@@ -13,12 +14,12 @@ import com.tree.clouds.coordination.model.entity.RoleManage;
 import com.tree.clouds.coordination.model.entity.SysMenu;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.model.vo.UserManagePageVO;
-import com.tree.clouds.coordination.model.vo.UserManageVO;
 import com.tree.clouds.coordination.service.GroupUserService;
 import com.tree.clouds.coordination.service.RoleUserService;
 import com.tree.clouds.coordination.service.SysMenuService;
 import com.tree.clouds.coordination.service.UserManageService;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
+import com.tree.clouds.coordination.utils.DownloadFile;
 import com.tree.clouds.coordination.utils.MultipartFileUtil;
 import com.tree.clouds.coordination.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +30,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.tree.clouds.coordination.utils.DownloadFile.getEncoder;
 
 /**
  * <p>
@@ -64,7 +61,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
     @Override
     public void rebuildPassword(List<String> ids) {
         // 加密后密码
-        String password = bCryptPasswordEncoder.encode("111111");
+        String password = bCryptPasswordEncoder.encode("888888");
 
         List<UserManage> userManages = this.listByIds(ids);
         userManages.forEach(userManage -> userManage.setPassword(password));
@@ -90,35 +87,36 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
         }
         //获取数据
         List<UserManage> userManages = UserManagerExcelListener.getDatas();
-        this.saveBatch(userManages);
-    }
 
-    @Override
-    public void exportUser(List<String> ids, HttpServletResponse response) {
-        List<UserManage> userManages = this.listByIds(ids);
-        String fileName = "用户信息模板.xlsx";
-        String filename = getEncoder(fileName, null);
-        //设置响应头，控制浏览器下载该文件
-        response.setContentType("application/octet-stream");
-        response.setHeader("Access-Control-Expose-Headers", "FileName");
-        response.setHeader("FileName", filename);
-        try {
-            response.setHeader("FileName", URLEncoder.encode(fileName, "UTF-8"));
-            EasyExcel.write(response.getOutputStream(), UserManage.class).autoCloseStream(Boolean.TRUE).sheet(fileName)
-                    .doWrite(userManages);
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (UserManage userManage : userManages) {
+            UserManage userByAccount = this.baseMapper.isExist(userManage.getAccount(), userManage.getPhoneNumber());
+            if (userByAccount != null) {
+                throw new BaseBusinessException(400, "账号:" + userByAccount.getAccount() + "已存在!!或手机号码:" + userManage.getPhoneNumber() + "已存在");
+            }
+            this.save(userManage);
         }
 
     }
 
     @Override
-    public IPage<UserManageVO> userManagePage(UserManagePageVO userManagePageVO) {
-        IPage<UserManageVO> page = userManagePageVO.getPage();
-        IPage<UserManageVO> userManageVOIPage = this.baseMapper.userManagePage(page, userManagePageVO);
-        List<UserManageVO> records = userManageVOIPage.getRecords();
-        for (UserManageVO record : records) {
+    public void exportUser(List<String> ids, HttpServletResponse response) {
+        List<UserManage> userManages = this.listByIds(ids);
+        String fileName = "用户信息.xlsx";
+        EasyExcel.write(Constants.TMP_HOME + fileName, UserManage.class).sheet("用户信息")
+                .doWrite(userManages);
+        byte[] bytes = DownloadFile.File2byte(new File(Constants.TMP_HOME + fileName));
+        DownloadFile.downloadFile(bytes, fileName, response, false);
+
+    }
+
+    @Override
+    public IPage<UserManageBO> userManagePage(UserManagePageVO userManagePageVO) {
+        IPage<UserManageBO> page = userManagePageVO.getPage();
+        IPage<UserManageBO> userManageVOIPage = this.baseMapper.userManagePage(page, userManagePageVO);
+        List<UserManageBO> records = userManageVOIPage.getRecords();
+        for (UserManageBO record : records) {
             List<RoleManage> roleManages = roleUserService.getRoleByUserId(record.getUserId());
+            record.setRoleIds(roleManages.stream().map(RoleManage::getRoleId).collect(Collectors.toList()));
             List<String> roleNames = roleManages.stream().map(RoleManage::getRoleName).collect(Collectors.toList());
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < roleNames.size(); i++) {
@@ -129,6 +127,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
                 }
             }
             record.setRoleName(stringBuilder.toString());
+
         }
         return userManageVOIPage;
     }
@@ -152,7 +151,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
             List<RoleManage> roles = this.roleUserService.getRoleByUserId(userId);
             authority = roles.stream().map(RoleManage::getRoleCode).collect(Collectors.joining(","));
 
-            List<Long> menuIds = sysRoleMenuMapper.getNavMenuIds(userId);
+            List<String> menuIds = sysRoleMenuMapper.getNavMenuIds(userId);
             List<SysMenu> menus = this.sysMenuService.listByIds(menuIds);
             String perms = menus.stream().map(SysMenu::getPerms).collect(Collectors.joining(","));
             authority = authority.concat(",").concat(perms);
@@ -188,15 +187,25 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
 
     @Override
     public void deleteUserManage(String userId) {
-        this.removeById(userId);
+        UserManage userManage = new UserManage();
+        userManage.setUserId(userId);
+        userManage.setDel(1);
+        this.updateById(userManage);
         roleUserService.removeRole(userId);
         groupUserService.removeUserByUserId(userId);
     }
 
     @Override
-    public void clearUserAuthorityInfoByMenuId(Long menuId) {
+    public void clearUserAuthorityInfoByMenuId(String menuId) {
         List<UserManage> sysUsers = this.baseMapper.listByMenuId(menuId);
+        sysUsers.forEach(u -> {
+            this.clearUserAuthorityInfo(u.getUserId());
+        });
+    }
 
+    @Override
+    public void clearUserAuthorityInfoByRoleId(String roleId) {
+        List<UserManage> sysUsers = this.baseMapper.listByRoleId(roleId);
         sysUsers.forEach(u -> {
             this.clearUserAuthorityInfo(u.getUserId());
         });

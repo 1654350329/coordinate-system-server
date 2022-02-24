@@ -10,6 +10,7 @@ import com.tree.clouds.coordination.service.WritingResultService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +34,7 @@ public class WritingResultController {
     @PostMapping("/writingResultPage")
     @ApiOperation(value = "劳动能力伤残等级结论书分页")
     @Log("劳动能力伤残等级结论书分页")
+    @PreAuthorize("hasAuthority('write:result:list')")
     public RestResponse<IPage<WritingResultBO>> writingResultPage(@RequestBody WritingResultPageVO writingResultPageVO) {
         IPage<WritingResultBO> page = writingResultService.writingResultPage(writingResultPageVO);
         return RestResponse.ok(page);
@@ -41,8 +43,17 @@ public class WritingResultController {
     @PostMapping("/writingBuild")
     @ApiOperation(value = "生成结论书 传参为 上报主键:reportId")
     @Log("生成结论书")
+    @PreAuthorize("hasAuthority('write:result:build')")
     public RestResponse<Boolean> writingBuild(@RequestBody PublicIdReqVO publicIdReqVO) {
         writingResultService.writingBuild(publicIdReqVO.getId());
         return RestResponse.ok(true);
+    }
+
+    @PostMapping("/writingFile")
+    @ApiOperation(value = "获取结论书详情 传参为 上报主键:reportId")
+    @Log("获取结论书详情")
+//    @PreAuthorize("hasAuthority('write:result:build')")
+    public RestResponse<String> writingFile(@RequestBody PublicIdReqVO publicIdReqVO) {
+        return RestResponse.ok(writingResultService.getWritingFile(publicIdReqVO.getId()));
     }
 }

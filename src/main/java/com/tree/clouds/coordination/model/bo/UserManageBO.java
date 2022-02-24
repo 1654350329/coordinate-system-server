@@ -15,4 +15,7 @@ public class UserManageBO extends UserManage {
     @ApiModelProperty("分组Id")
     @NotNull(message = "至少绑定一个分组")
     private String groupId;
+
+    @ApiModelProperty(value = "角色名称")
+    private String roleName;
 }

@@ -1,6 +1,14 @@
 package com.tree.clouds.coordination.service.impl;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.ZipUtil;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.mapper.DataReportMapper;
 import com.tree.clouds.coordination.model.bo.ReportDetailInfoBO;
 import com.tree.clouds.coordination.model.bo.WritingListBO;
@@ -8,12 +16,13 @@ import com.tree.clouds.coordination.model.entity.EvaluationSheet;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.model.vo.*;
 import com.tree.clouds.coordination.service.*;
+import com.tree.clouds.coordination.utils.DownloadFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -79,5 +88,72 @@ public class WritingListServiceImpl implements WritingListService {
         writingListDetailVO.setDataReportUser(examineUser);
         writingListDetailVO.setAppraisalReviewUser(reviewUser);
         return writingListDetailVO;
+    }
+
+    @Override
+    public void writingListExport(List<String> writingBatchIds, HttpServletResponse response) {
+        String filePath = null;
+        FileUtil.del(Constants.TMP_HOME + "\\行文名单");
+        FileUtil.mkdir(Constants.TMP_HOME + "\\行文名单");
+        for (String writingBatchId : writingBatchIds) {
+            WritingListDetailVO writingListDetailVO = writingListDetail(writingBatchId);
+            String time = format(writingListDetailVO.getTime());
+            String fileName = time + "劳动能力鉴定等级人员名单" + UUID.fastUUID().toString().substring(0, 4) + ".xlsx";
+            System.out.println("fileName = " + fileName);
+            Map<String, Object> head = new HashMap<>();
+            head.put("ctime", time);
+            head.put("time", writingListDetailVO.getTime());
+            head.put("reviewSignatureUser", writingListDetailVO.getReviewSignatureUser());
+            head.put("appraisalReviewUser", writingListDetailVO.getAppraisalReviewUser());
+            head.put("dataReportUser", writingListDetailVO.getDataReportUser());
+            List<Map<String, Object>> dates = new ArrayList<>();
+            for (int i = 0; i < writingListDetailVO.getDataReports().size(); i++) {
+                ReportDetailInfoBO infoBO = writingListDetailVO.getDataReports().get(i);
+                Map<String, Object> data = new LinkedHashMap<>();
+                data.put("index", i + 1);
+                data.put("appraiseNumber", infoBO.getAppraiseNumber());
+                data.put("nativePlace", infoBO.getNativePlace());
+                data.put("unitName", infoBO.getUnitName());
+                data.put("identifiedName", infoBO.getIdentifiedName());
+                data.put("idCart", infoBO.getIdCart());
+                data.put("sort", infoBO.getSort() == 0 ? "工" : "病");
+                data.put("sickTime", infoBO.getSickTime());
+                data.put("sickCondition", infoBO.getSickCondition());
+                data.put("appraiseGrade", infoBO.getAppraiseGrade());
+                data.put("appraiseResult", infoBO.getAppraiseResult());
+                dates.add(data);
+            }
+
+            String resource = this.getClass().getClassLoader().getResource("WritingListDetail.xlsx").getFile();
+
+            filePath = Constants.TMP_HOME + "\\行文名单\\" + fileName;
+            ExcelWriter excelWriter = EasyExcel.write(filePath)
+                    .withTemplate(resource)
+                    .build();
+            WriteSheet writeSheet = EasyExcel.writerSheet().build();
+            // 注意：forceNewRow 代表在写入list的时候不管list下面有没有空行 都会创建一行，然后下面的数据往后移动。默认 是false，会直接使用下一行，如果没有则创建。这会把所有数据放到内存，数据量大时会很耗内存
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+            excelWriter.fill(dates, fillConfig, writeSheet);
+            excelWriter.fill(head, fillConfig, writeSheet);
+            excelWriter.finish();
+        }
+        if (writingBatchIds.size() == 1) {
+            File file = new File(filePath);
+            byte[] bytes = DownloadFile.File2byte(file);
+            DownloadFile.downloadFile(bytes, file.getName(), response, false);
+        }
+        File zip = ZipUtil.zip(Constants.TMP_HOME + "\\行文名单");
+
+        byte[] bytes = DownloadFile.File2byte(zip);
+        DownloadFile.downloadFile(bytes, zip.getName(), response, false);
+
+    }
+
+    public String format(String text) {
+        for (int i = 0; i < 10; i++) {
+            text = text.replace((char) ('0' + i),
+                    "零一二三四五六七八九".charAt(i));
+        }
+        return text;
     }
 }

@@ -15,10 +15,10 @@ import com.tree.clouds.coordination.model.vo.WritingResultPageVO;
 import com.tree.clouds.coordination.service.DataReportService;
 import com.tree.clouds.coordination.service.EvaluationSheetService;
 import com.tree.clouds.coordination.service.ReviewSignatureService;
+import com.tree.clouds.coordination.utils.BaseBusinessException;
 import com.tree.clouds.coordination.utils.LoginUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 
@@ -44,27 +44,29 @@ public class ReviewSignatureServiceImpl extends ServiceImpl<ReviewSignatureMappe
     }
 
     @Override
-    @Transactional
     public Boolean addReviewSignature(ReviewSignatureVO reviewSignatureVO) {
         ReviewSignature signature = this.getById(reviewSignatureVO.getReviewAndSignatureId());
+        if (signature.getReviewStatus() == 1) {
+            throw new BaseBusinessException(400, "已完成审签,不允许修改");
+        }
         ReviewSignature reviewSignature = BeanUtil.toBean(reviewSignatureVO, ReviewSignature.class);
         reviewSignature.setReviewUser(LoginUserUtil.getUserId());
         if (reviewSignatureVO.getReviewResult().equals("1")) {
             //审核进度完成
             dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_SEVEN, null);
-            reviewSignature.setReviewResult("1");
-            reviewSignature.setReviewStatus("1");
-            if (evaluationSheetService.isCompleteStatus(signature.getWritingBatchId())) {
-                evaluationSheetService.updateCompleteStatus(signature.getWritingBatchId());
-            }
+            reviewSignature.setReviewResult(1);
+            reviewSignature.setReviewStatus(1);
         } else {
             //审核进度失败驳回
             dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, reviewSignatureVO.getRemark());
-            reviewSignature.setReviewResult("0");
-            reviewSignature.setReviewStatus("1");
+            reviewSignature.setReviewResult(0);
+            reviewSignature.setReviewStatus(1);
             reviewSignature.setRemark(reviewSignatureVO.getRemark());
         }
         this.updateById(reviewSignature);
+        if (evaluationSheetService.isCompleteStatus(signature.getWritingBatchId())) {
+            evaluationSheetService.updateCompleteStatus(signature.getWritingBatchId());
+        }
         return true;
     }
 

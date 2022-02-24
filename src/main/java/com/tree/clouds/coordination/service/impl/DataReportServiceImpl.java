@@ -1,7 +1,9 @@
 package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdcardUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.DataReportMapper;
@@ -9,12 +11,15 @@ import com.tree.clouds.coordination.model.bo.DataReportBO;
 import com.tree.clouds.coordination.model.entity.DataExamine;
 import com.tree.clouds.coordination.model.entity.DataReport;
 import com.tree.clouds.coordination.model.entity.FileInfo;
+import com.tree.clouds.coordination.model.entity.WritingBatch;
 import com.tree.clouds.coordination.model.vo.DataReportPageVO;
 import com.tree.clouds.coordination.model.vo.FileInfoVO;
 import com.tree.clouds.coordination.model.vo.UpdateDataReportVO;
+import com.tree.clouds.coordination.model.vo.WritingBatchVO;
 import com.tree.clouds.coordination.service.DataExamineService;
 import com.tree.clouds.coordination.service.DataReportService;
 import com.tree.clouds.coordination.service.FileInfoService;
+import com.tree.clouds.coordination.service.WritingBatchService;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +44,8 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
     private FileInfoService fileInfoService;
     @Autowired
     private DataExamineService dataExamineService;
+    @Autowired
+    private WritingBatchService writingBatchService;
     //手机号码正则匹配
     private static final String REGEX_MOBILE = "((\\+86|0086)?\\s*)((134[0-8]\\d{7})|(((13([0-3]|[5-9]))|(14[5-9])|15([0-3]|[5-9])|(16(2|[5-7]))|17([0-3]|[5-8])|18[0-9]|19(1|[8-9]))\\d{8})|(14(0|1|4)0\\d{7})|(1740([0-5]|[6-9]|[10-12])\\d{7}))";
 
@@ -52,6 +59,7 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         }
         DataReport dataReport = BeanUtil.toBean(updateDataReportVO, DataReport.class);
         dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_ZERO);
+        dataReport.setUpdatedTime(DateUtil.now());
         this.save(dataReport);
         fileInfoService.saveFileInfo(updateDataReportVO.getBizFile(), dataReport.getReportId());
     }
@@ -79,6 +87,12 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         return this.baseMapper.selectDataReport(page, dataReportPageVO);
     }
 
+    @Override
+    public IPage<DataReportBO> dataReportPage(WritingBatchVO writingBatchVO) {
+        IPage<DataReportBO> page = writingBatchVO.getPage();
+        return this.baseMapper.getDataReportPage(page, writingBatchVO);
+    }
+
     /**
      * 修改审核进度
      *
@@ -101,6 +115,10 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
                 report.setDel(0);
                 report.setExamineProgress(0);
                 this.save(report);
+                //从任务组中移除
+                QueryWrapper<WritingBatch> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq(WritingBatch.REPORT_ID, reportId);
+                writingBatchService.remove(queryWrapper);
             }
         } else {
             List<DataReport> reports = reportIds.stream().map(id -> {
@@ -120,18 +138,26 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         List<FileInfo> infos = this.fileInfoService.getByBizIdsAndType(dataReport.getReportId(), null);
         List<FileInfoVO> fileInfoVOS = infos.stream().map(fileInfo -> BeanUtil.toBean(fileInfo, FileInfoVO.class)).collect(Collectors.toList());
         UpdateDataReportVO dataReportVO = BeanUtil.toBean(dataReport, UpdateDataReportVO.class);
+        dataReportVO.setBirth(IdcardUtil.getBirthByIdCard(dataReportVO.getIdCart()));
         dataReportVO.setBizFile(fileInfoVOS);
         return dataReportVO;
     }
 
     @Override
     public void report(List<String> ids) {
-        updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_ONE, null);
         for (String id : ids) {
-            DataExamine dataExamine = new DataExamine();
-            dataExamine.setReportId(id);
-            dataExamineService.save(dataExamine);
+            DataReport report = this.getById(id);
+            if (report.getExamineProgress() == 0) {
+                DataExamine dataExamine = new DataExamine();
+                dataExamine.setReportId(id);
+                dataExamineService.save(dataExamine);
+            }
+            //已完成审核无法重新上报
+            if (report.getExamineProgress() > 2) {
+                throw new BaseBusinessException(400, "已审核完成,无法重新上报!");
+            }
         }
+        updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_ONE, null);
     }
 
     @Override

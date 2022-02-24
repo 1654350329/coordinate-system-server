@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.tree.clouds.coordination.model.bo.UserManageBO;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.model.vo.UserManagePageVO;
-import com.tree.clouds.coordination.model.vo.UserManageVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +28,7 @@ public interface UserManageService extends IService<UserManage> {
 
     void exportUser(List<String> ids, HttpServletResponse response);
 
-    IPage<UserManageVO> userManagePage(UserManagePageVO userManagePageVO);
+    IPage<UserManageBO> userManagePage(UserManagePageVO userManagePageVO);
 
     UserManage getUserByAccount(String account);
 
@@ -43,5 +42,7 @@ public interface UserManageService extends IService<UserManage> {
 
     void clearUserAuthorityInfo(String userId);
 
-    void clearUserAuthorityInfoByMenuId(Long menuId);
+    void clearUserAuthorityInfoByMenuId(String menuId);
+
+    void clearUserAuthorityInfoByRoleId(String roleId);
 }

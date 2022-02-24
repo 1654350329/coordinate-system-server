@@ -3,6 +3,7 @@ package com.tree.clouds.coordination.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tree.clouds.coordination.model.bo.SysMenuDto;
 import com.tree.clouds.coordination.model.entity.SysMenu;
+import com.tree.clouds.coordination.model.vo.SysMenuTreeVO;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public interface SysMenuService extends IService<SysMenu> {
 
     List<SysMenuDto> getCurrentUserNav();
 
-    List<SysMenu> tree();
+    List<SysMenuTreeVO> tree();
 
+    List<String> getRole(String id);
 }

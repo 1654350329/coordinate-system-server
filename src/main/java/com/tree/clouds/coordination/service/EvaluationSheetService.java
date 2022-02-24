@@ -2,11 +2,13 @@ package com.tree.clouds.coordination.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tree.clouds.coordination.model.bo.DataReportBO;
 import com.tree.clouds.coordination.model.bo.WritingListBO;
 import com.tree.clouds.coordination.model.entity.EvaluationSheet;
 import com.tree.clouds.coordination.model.vo.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -39,7 +41,7 @@ public interface EvaluationSheetService extends IService<EvaluationSheet> {
      * @param drawVO
      * @return
      */
-    IPage<ExpertVO> draw(DrawVO drawVO);
+    void draw(DrawVO drawVO);
 
     /**
      * 重置抽签
@@ -81,7 +83,7 @@ public interface EvaluationSheetService extends IService<EvaluationSheet> {
      */
     Boolean releaseEvaluation(EvaluationReleaseVO evaluationReleaseVO);
 
-    List<ExpertVO> drawInfo(String writingBatchId);
+    Map<String, IPage<ExpertVO>> drawInfo(DrawInfoVO drawInfoVO);
 
     Boolean isCompleteStatus(String writingBatchId);
 
@@ -104,4 +106,9 @@ public interface EvaluationSheetService extends IService<EvaluationSheet> {
 
     List<String> writingBatch();
 
+    IPage<DataReportBO> reportDetailPage(WritingBatchVO writingBatchVO);
+
+    EvaluationSheet evaluationSheetDetail(String id);
+
+    IPage<ExpertDetailVO> expertDetailPage(WritingBatchVO writingBatchVO);
 }

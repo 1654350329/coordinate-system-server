@@ -104,10 +104,14 @@ public class LogAspect {
         PrintWriter writer = null;
         try {
             HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
+            if (response != null && response.isCommitted()) {
+                return;
+            }
             response.reset();
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "text/plain;charset=UTF-8");
             response.setHeader("icop-content-type", "exception");
+            response.setHeader("Access-Control-Allow-Origin", "*");
             writer = response.getWriter();
         } catch (IOException e) {
             e.printStackTrace();

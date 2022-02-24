@@ -2,6 +2,7 @@ package com.tree.clouds.coordination.model.entity;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -12,7 +13,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotBlank;
-import java.io.Serializable;
+import javax.validation.constraints.NotNull;
 
 /**
  * <p>
@@ -26,7 +27,8 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @TableName("user_manage")
 @ApiModel(value = "UserManage对象", description = "用户管理")
-public class UserManage extends BaseEntity implements Serializable {
+@ColumnWidth(20)
+public class UserManage extends BaseEntity {
 
     public static final String USER_ID = "USER_ID";
     public static final String USER_NAME = "USER_NAME";
@@ -58,6 +60,11 @@ public class UserManage extends BaseEntity implements Serializable {
     @TableField(PHONE_NUMBER)
     @NotBlank(message = "姓名不能为空")
     private String phoneNumber;
+
+    @ApiModelProperty(value = "科别")
+    @ExcelProperty("科别")
+    @TableField("CATEGORY")
+    private String category;
 
     @ExcelProperty("工作单位")
     @ApiModelProperty(value = "工作单位")
@@ -96,21 +103,21 @@ public class UserManage extends BaseEntity implements Serializable {
     private String password;
 
     @ExcelIgnore
-    @ApiModelProperty(value = "微信授权 0否 1是")
+    @ApiModelProperty(value = "微信授权")
     @TableField(WECHAT_AUTHORIZATION)
     @NotBlank(message = "微信授权不能为空")
-    private int wechatAuthorization;
+    private String wechatAuthorization;
 
-    @ExcelProperty("是否收取通知 0否 1是")
-    @ApiModelProperty(value = "是否收取通知")
-    @NotBlank(message = "是否收取通知不能为空")
+    @ExcelProperty("是否收取通知")
+    @ApiModelProperty(value = "是否收取通知 0否 1是")
+    @NotNull(message = "是否收取通知不能为空")
     @TableField(RECEIVE_NOTICE_STATUS)
     private int receiveNoticeStatus;
 
-    @ExcelProperty("账号状态 0可用 1不可用")
-    @ApiModelProperty(value = "账号状态")
-    @NotBlank(message = "账号状态不能为空")
-    @TableField(RECEIVE_NOTICE_STATUS)
+    @ExcelProperty("账号状态")
+    @ApiModelProperty(value = "账号状态 0可用 1不可用")
+    @NotNull(message = "账号状态不能为空")
+    @TableField(ACCOUNT_STATUS)
     private int accountStatus;
 
     @ExcelProperty("备注")

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tree.clouds.coordination.model.entity.RoleManage;
 import com.tree.clouds.coordination.model.entity.UserManage;
+import com.tree.clouds.coordination.model.vo.DistributeRoleVO;
 import com.tree.clouds.coordination.model.vo.RoleManagePageVO;
 
 import java.util.List;
@@ -26,4 +27,8 @@ public interface RoleManageService extends IService<RoleManage> {
     List<UserManage> getUserInfoByRole(String roleName);
 
     IPage<RoleManage> roleManagePage(RoleManagePageVO roleManagePageVO);
+
+    void distributeRole(DistributeRoleVO distributeRoleVO);
+
+    void deleteRole(List<String> ids);
 }
