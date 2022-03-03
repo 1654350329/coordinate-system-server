@@ -6,6 +6,7 @@ import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.UserManageBO;
 import com.tree.clouds.coordination.model.vo.PublicIdsReqVO;
+import com.tree.clouds.coordination.model.vo.UpdatePasswordVO;
 import com.tree.clouds.coordination.model.vo.UserManagePageVO;
 import com.tree.clouds.coordination.model.vo.UserStatusVO;
 import com.tree.clouds.coordination.service.UserManageService;
@@ -104,9 +105,17 @@ public class UserManageController {
     @GetMapping("/exportUser")
     @ApiOperation(value = "导出用户")
     @Log("导出用户")
-    @PreAuthorize("hasAuthority('user:manage:export')")
+//    @PreAuthorize("hasAuthority('user:manage:export')")
     public void exportUser(PublicIdsReqVO publicIdsReqVO, HttpServletResponse response) {
         userManageservice.exportUser(publicIdsReqVO.getIds(), response);
+    }
+
+    @PostMapping("/updatePassword")
+    @ApiOperation(value = "修改当前用户密码")
+    @Log("修改当前用户密码")
+    public RestResponse<Boolean> updatePassword(@RequestBody UpdatePasswordVO updatePasswordVO) {
+        userManageservice.updatePassword(updatePasswordVO);
+        return RestResponse.ok(true);
     }
 }
 

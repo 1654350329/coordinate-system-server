@@ -32,7 +32,7 @@ public class MessageInfoServiceImpl extends ServiceImpl<MessageInfoMapper, Messa
     public void completionMethod(String messageId, String type) {
         MessageInfo messageInfo = this.getById(messageId);
         if (StrUtil.isNotBlank(messageInfo.getCompletionTime())) {
-            throw new BaseBusinessException(500, "已完成送达不可以修改发送方式!");
+            throw new BaseBusinessException(500, "行文批次号:" + messageInfo.getWritingBatchId() + "已完成送达不可以修改发送方式!");
         }
         messageInfo.setCompletionMethod(type);
         this.updateById(messageInfo);

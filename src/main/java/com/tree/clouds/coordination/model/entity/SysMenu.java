@@ -47,7 +47,7 @@ public class SysMenu extends BaseEntity {
     private String component;
 
     @NotNull(message = "菜单类型不能为空")
-    @ApiModelProperty("菜单类型 0：目录   1：菜单   2：按钮")
+    @ApiModelProperty("菜单类型 0：目录   1:按钮")
     private Integer type;
 
     @ApiModelProperty("菜单图标")

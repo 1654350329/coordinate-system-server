@@ -3,6 +3,7 @@ package com.tree.clouds.coordination.security;
 
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.service.UserManageService;
+import com.tree.clouds.coordination.utils.BaseBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -24,10 +25,10 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
         UserManage userManage = userManageService.getUserByAccount(username);
         if (userManage == null) {
-            throw new UsernameNotFoundException("用户不存在");
+            throw new BaseBusinessException(400, "账号不存在");
         }
         if (userManage.getAccountStatus() == 1) {
-            throw new UsernameNotFoundException("用户已停用");
+            throw new BaseBusinessException(400, "账号已停用");
         }
         return new AccountUser(userManage.getUserId(), userManage.getAccount(), userManage.getPassword(), getUserAuthority(userManage.getUserId()));
     }

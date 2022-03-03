@@ -29,7 +29,7 @@
     <select id="writingBatch" resultType="java.lang.String">
       select DISTINCT a.WRITING_BATCH_ID from evaluation_sheet a
         left join review_signature b on a.WRITING_BATCH_ID=b.WRITING_BATCH_ID
-        where b.REVIEW_status='0'
+        where b.REVIEW_status='0' OR b.REVIEW_status is null
     </select>
     <select id="getNumber" resultType="java.lang.String">
         select number
@@ -40,10 +40,13 @@
         order by number desc limit 1
     </select>
     <select id="evaluationSheetPage" resultType="com.tree.clouds.coordination.model.entity.EvaluationSheet">
-        select b.user_name as CREATED_USER,a.* from evaluation_sheet a
+        select b.user_name as CREATED_USER,a.*,d.FILE_PATH from evaluation_sheet a
         left join user_manage b on a.CREATED_USER=b.USER_ID
-        left join appraise c on c.WRITING_BATCH_ID=a.WRITING_BATCH_ID
-        where 1=1 and c.APPRAISE_ID is null
+        left join file_info d on d.biz_id=a.evaluation_id
+        where 1=1
+        <if test="evaluationSheetPageVO.releaseStatus != null">
+            and a.release_status = #{evaluationSheetPageVO.releaseStatus}
+        </if>
         <if test="evaluationSheetPageVO.writingBatchId != null and evaluationSheetPageVO.writingBatchId !=''">
             and a.WRITING_BATCH_ID like "%"#{evaluationSheetPageVO.writingBatchId}"%"
         </if>
@@ -63,15 +66,16 @@
             and a.draw_time &lt;= #{evaluationSheetPageVO.drawTimeEnd}
         </if>
         <if test="evaluationSheetPageVO.drawStatus != null and evaluationSheetPageVO.drawStatus !=''">
-            and a.drawStatus = #{evaluationSheetPageVO.drawStatus}
+            and a.draw_status = #{evaluationSheetPageVO.drawStatus}
         </if>
 
     </select>
     <select id="writingListPage" resultType="com.tree.clouds.coordination.model.bo.WritingListBO">
-        select DISTINCT a.*
+        select DISTINCT d.file_path as uploadPath ,a.*
         from evaluation_sheet a
         left join writing_batch b on a.WRITING_BATCH_ID = b.WRITING_BATCH_ID
         left join data_report c on b.report_ID = c.report_ID
+        left join file_info d on d.biz_id=a.WRITING_BATCH_ID
         where 1 = 1 and a.complete_status=1
         <if test="writingListPageVO.year !=null and writingListPageVO.year!=''">
             and a.year=#{writingListPageVO.year}

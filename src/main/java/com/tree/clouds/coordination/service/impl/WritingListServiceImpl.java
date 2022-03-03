@@ -16,6 +16,7 @@ import com.tree.clouds.coordination.model.entity.EvaluationSheet;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.model.vo.*;
 import com.tree.clouds.coordination.service.*;
+import com.tree.clouds.coordination.utils.BaseBusinessException;
 import com.tree.clouds.coordination.utils.DownloadFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,9 @@ public class WritingListServiceImpl implements WritingListService {
 
     @Override
     public void writingListExport(List<String> writingBatchIds, HttpServletResponse response) {
+        if (writingBatchIds.size() == 0) {
+            throw new BaseBusinessException(400, "请钩选要导出的行文名单!");
+        }
         String filePath = null;
         FileUtil.del(Constants.TMP_HOME + "\\行文名单");
         FileUtil.mkdir(Constants.TMP_HOME + "\\行文名单");

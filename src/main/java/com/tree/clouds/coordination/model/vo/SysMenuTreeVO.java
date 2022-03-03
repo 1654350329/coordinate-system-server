@@ -30,7 +30,8 @@ public class SysMenuTreeVO {
     private String perms;
 
     private String component;
-
+    @ApiModelProperty("菜单类型 0：目录   1:按钮")
+    private Integer type;
     @TableField(exist = false)
     private List<SysMenuTreeVO> children = new ArrayList<>();
 }

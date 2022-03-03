@@ -38,6 +38,7 @@ public class EvaluationSheet extends BaseEntity {
     public static final String DRAW_STATUS = "DRAW_STATUS";
     public static final String COMPLETE_STATUS = "COMPLETE_STATUS";
     public static final String UPLOAD_STATUS = "UPLOAD_STATUS";
+    public static final String RELEASE_STATUS = "release_status";
     private static final long serialVersionUID = 1L;
     @ApiModelProperty(value = "评估主键")
     @TableId(value = EVALUATION_ID, type = IdType.UUID)
@@ -87,7 +88,7 @@ public class EvaluationSheet extends BaseEntity {
     @TableField(DRAW_TIME)
     private String drawTime;
 
-    @ApiModelProperty(value = "抽签状态 0未抽 1已抽")
+    @ApiModelProperty(value = "抽签状态 0未抽 1第一轮 2第二轮")
     @TableField(DRAW_STATUS)
     private int drawStatus;
 
@@ -95,7 +96,15 @@ public class EvaluationSheet extends BaseEntity {
     @TableField(COMPLETE_STATUS)
     private int completeStatus;
 
+    @ApiModelProperty(value = "发布状态 0未发布 1已发布")
+    @TableField(RELEASE_STATUS)
+    private int releaseStatus;
+
     @ApiModelProperty(value = "附件状态 0未上传 1已上传")
     @TableField(UPLOAD_STATUS)
     private int uploadStatus;
+
+    @ApiModelProperty(value = "通知书路径")
+    @TableField(exist = false)
+    private String filePath;
 }

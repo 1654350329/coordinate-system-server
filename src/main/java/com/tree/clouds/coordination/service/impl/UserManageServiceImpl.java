@@ -1,6 +1,8 @@
 package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.codec.Base64;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -13,15 +15,13 @@ import com.tree.clouds.coordination.model.bo.UserManageBO;
 import com.tree.clouds.coordination.model.entity.RoleManage;
 import com.tree.clouds.coordination.model.entity.SysMenu;
 import com.tree.clouds.coordination.model.entity.UserManage;
+import com.tree.clouds.coordination.model.vo.UpdatePasswordVO;
 import com.tree.clouds.coordination.model.vo.UserManagePageVO;
 import com.tree.clouds.coordination.service.GroupUserService;
 import com.tree.clouds.coordination.service.RoleUserService;
 import com.tree.clouds.coordination.service.SysMenuService;
 import com.tree.clouds.coordination.service.UserManageService;
-import com.tree.clouds.coordination.utils.BaseBusinessException;
-import com.tree.clouds.coordination.utils.DownloadFile;
-import com.tree.clouds.coordination.utils.MultipartFileUtil;
-import com.tree.clouds.coordination.utils.RedisUtil;
+import com.tree.clouds.coordination.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -167,7 +168,14 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
 
     @Override
     public void addUserManage(UserManageBO userManageBO) {
+        //手机号码正则匹配
+        String REGEX_MOBILE = "((\\+86|0086)?\\s*)((134[0-8]\\d{7})|(((13([0-3]|[5-9]))|(14[5-9])|15([0-3]|[5-9])|(16(2|[5-7]))|17([0-3]|[5-8])|18[0-9]|19(1|[8-9]))\\d{8})|(14(0|1|4)0\\d{7})|(1740([0-5]|[6-9]|[10-12])\\d{7}))";
+        if (!Pattern.matches(REGEX_MOBILE, userManageBO.getPhoneNumber())) {
+            throw new BaseBusinessException(400, "手机号码不合法");
+        }
         UserManage userManage = BeanUtil.toBean(userManageBO, UserManage.class);
+        String password = bCryptPasswordEncoder.encode(Base64.decodeStr(userManage.getPassword()));
+        userManage.setPassword(password);
         this.save(userManage);
         //添加分组
         groupUserService.saveGroupUser(userManage.getUserId(), userManageBO.getGroupId());
@@ -178,7 +186,13 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
 
     @Override
     public void updateUserManage(UserManageBO userManageBO) {
+        if (StrUtil.isBlank(userManageBO.getUserId())) {
+            throw new BaseBusinessException(400, "用户id不许为空");
+        }
         UserManage userManage = BeanUtil.toBean(userManageBO, UserManage.class);
+        if (StrUtil.isNotBlank(userManageBO.getPassword())) {
+            userManage.setPassword(bCryptPasswordEncoder.encode(Base64.decodeStr(userManageBO.getPassword())));
+        }
         this.updateById(userManage);
         //角色先删后增
         roleUserService.removeRole(userManage.getUserId());
@@ -209,5 +223,14 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
         sysUsers.forEach(u -> {
             this.clearUserAuthorityInfo(u.getUserId());
         });
+    }
+
+    @Override
+    public void updatePassword(UpdatePasswordVO updatePasswordVO) {
+        String password = bCryptPasswordEncoder.encode(Base64.decodeStr(updatePasswordVO.getPassword()));
+        UserManage user = new UserManage();
+        user.setPassword(password);
+        user.setUserId(LoginUserUtil.getUserId());
+        this.updateById(user);
     }
 }

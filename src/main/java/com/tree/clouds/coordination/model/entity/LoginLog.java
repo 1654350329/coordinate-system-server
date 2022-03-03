@@ -51,7 +51,7 @@ public class LoginLog extends BaseEntity {
     @TableField("ip")
     private String ip;
 
-    @ApiModelProperty(value = "登入日志")
+    @ApiModelProperty(value = "登入日志 1成功 2失败")
     @ExcelProperty("登入日志")
     @TableField("status")
     private Integer status;

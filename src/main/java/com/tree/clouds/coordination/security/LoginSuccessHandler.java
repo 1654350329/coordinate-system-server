@@ -33,6 +33,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         LoginLog loginLog = new LoginLog();
         loginLog.setIp(ipAddresses);
         loginLog.setAccount(username);
+        loginLog.setStatus(1);
         loginLogService.save(loginLog);
         response.setContentType("application/json;charset=UTF-8");
         ServletOutputStream outputStream = response.getOutputStream();

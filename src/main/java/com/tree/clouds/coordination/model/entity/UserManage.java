@@ -99,13 +99,13 @@ public class UserManage extends BaseEntity {
     @ExcelIgnore
     @ApiModelProperty(value = "密码")
     @TableField(PASSWORD)
-    @NotBlank(message = "密码不能为空")
+//    @NotBlank(message = "密码不能为空")
     private String password;
 
     @ExcelIgnore
     @ApiModelProperty(value = "微信授权")
     @TableField(WECHAT_AUTHORIZATION)
-    @NotBlank(message = "微信授权不能为空")
+//    @NotBlank(message = "微信授权不能为空")
     private String wechatAuthorization;
 
     @ExcelProperty("是否收取通知")

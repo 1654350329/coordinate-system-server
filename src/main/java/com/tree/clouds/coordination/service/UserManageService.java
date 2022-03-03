@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tree.clouds.coordination.model.bo.UserManageBO;
 import com.tree.clouds.coordination.model.entity.UserManage;
+import com.tree.clouds.coordination.model.vo.UpdatePasswordVO;
 import com.tree.clouds.coordination.model.vo.UserManagePageVO;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,4 +46,6 @@ public interface UserManageService extends IService<UserManage> {
     void clearUserAuthorityInfoByMenuId(String menuId);
 
     void clearUserAuthorityInfoByRoleId(String roleId);
+
+    void updatePassword(UpdatePasswordVO updatePasswordVO);
 }

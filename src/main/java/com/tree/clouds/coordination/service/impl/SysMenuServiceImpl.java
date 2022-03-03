@@ -1,13 +1,11 @@
 package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.SysMenuMapper;
 import com.tree.clouds.coordination.mapper.SysRoleMenuMapper;
 import com.tree.clouds.coordination.model.bo.SysMenuDto;
 import com.tree.clouds.coordination.model.entity.SysMenu;
-import com.tree.clouds.coordination.model.entity.SysRoleMenu;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.model.vo.SysMenuTreeVO;
 import com.tree.clouds.coordination.service.SysMenuService;
@@ -70,8 +68,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
     @Override
     public List<String> getRole(String id) {
-        List<SysRoleMenu> roleIds = this.sysRoleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().eq("role_Id", id));
-        return roleIds.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList());
+        return this.baseMapper.getMenuIdByRoleId(id);
     }
 
     private List<SysMenuDto> convert(List<SysMenuTreeVO> menuTree) {

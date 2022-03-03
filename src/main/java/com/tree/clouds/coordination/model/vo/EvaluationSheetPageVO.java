@@ -26,10 +26,12 @@ public class EvaluationSheetPageVO extends PageParam {
     @ApiModelProperty(value = "抽签结束时间")
     private String drawTimeEnd;
 
-    @ApiModelProperty(value = "抽签状态 0未抽 1已抽")
-    private int drawStatus;
+    @ApiModelProperty(value = "抽签状态 0未抽 1第一轮 2第二轮")
+    private Integer drawStatus;
 
-    //暂定不合理
+    @ApiModelProperty(value = "发布状态 0未发布 1已发布")
+    private Integer releaseStatus;
+
     @ApiModelProperty(value = "任务类型")
     private String taskType;
 

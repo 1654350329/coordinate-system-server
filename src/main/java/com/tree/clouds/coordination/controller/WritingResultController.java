@@ -52,7 +52,6 @@ public class WritingResultController {
     @PostMapping("/writingFile")
     @ApiOperation(value = "获取结论书详情 传参为 上报主键:reportId")
     @Log("获取结论书详情")
-//    @PreAuthorize("hasAuthority('write:result:build')")
     public RestResponse<String> writingFile(@RequestBody PublicIdReqVO publicIdReqVO) {
         return RestResponse.ok(writingResultService.getWritingFile(publicIdReqVO.getId()));
     }

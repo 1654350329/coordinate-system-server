@@ -22,4 +22,6 @@ public class WritingListBO {
     private int evaluationNumber;
     @ApiModelProperty(value = "附件状态")
     private String uploadStatus;
+    @ApiModelProperty(value = "附件路径")
+    private String uploadPath;
 }

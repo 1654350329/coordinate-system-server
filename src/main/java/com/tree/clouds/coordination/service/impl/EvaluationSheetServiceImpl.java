@@ -21,6 +21,7 @@ import com.tree.clouds.coordination.service.*;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import com.tree.clouds.coordination.utils.QiniuUtil;
 import com.tree.clouds.coordination.utils.SmsUtil;
+import com.tree.clouds.coordination.utils.Word2PdfUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,7 +102,8 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             throw new BaseBusinessException(500, "与现在加入的批次号必须一致");
         }
         dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE, null);
-
+        EvaluationSheet evaluationSheet = this.getByWritingBatchId(writingBatchId);
+        evaluationSheet.setEvaluationNumber(evaluationSheet.getEvaluationNumber() + ids.size());
         this.writingBatchService.saveBatchInfo(writingBatchId, ids);
     }
 
@@ -159,6 +161,8 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
                 throw new BaseBusinessException(500, "参评专家组已完成抽签!");
             }
             evaluationSheet.setExpertNumber(drawVO.getNumber());
+            //设置抽签第一轮状态
+            evaluationSheet.setDrawStatus(2);
         } else {
             if (evaluationSheet.getExpertNumber() == 0) {
                 throw new BaseBusinessException(500, "专家组还未完成抽签!");
@@ -169,8 +173,8 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             evaluationSheet.setAlternativeExpertNumber(drawVO.getNumber());
             //设置抽签完成时间
             evaluationSheet.setDrawTime(DateUtil.format(new Date(), "YYYY-MM-dd"));
-            //设置抽签完成状态
-            evaluationSheet.setDrawStatus(1);
+            //设置抽签第二轮
+            evaluationSheet.setDrawStatus(2);
         }
         this.baseMapper.updateById(evaluationSheet);
 
@@ -306,6 +310,9 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         if (evaluationCount != evaluationSheet.getExpertNumber()) {
             throw new BaseBusinessException(500, "行文批次号:" + evaluationSheet.getWritingBatchId() + "参评专家组人数未达到!");
         }
+        evaluationSheet.setReleaseStatus(1);
+        this.updateById(evaluationSheet);
+
         List<String> reportIds = writingBatchService.getReportByWritingBatchId(evaluationReleaseVO.getWritingBatchId());
         //修改审核进度待鉴定
         dataReportService.updateDataExamine(reportIds, DataReport.EXAMINE_PROGRESS_FOUR, null);
@@ -475,8 +482,9 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
 
         FileOutputStream fos = new FileOutputStream(Constants.TMP_HOME + fileName);
         template.write(fos);
+        String file = Word2PdfUtil.doc2Img(Constants.TMP_HOME + fileName, Constants.TMP_HOME);
         //上传文件
-        String fileKey = QiniuUtil.fileUpload(Constants.TMP_HOME + fileName);
+        String fileKey = QiniuUtil.fileUpload(file);
 //        StorePath storePath = this.storageClient.uploadFile(new FileInputStream(Constants.TMP_HOME + fileName), new File(Constants.TMP_HOME + fileName).length(), formatSuffix, null);
         FileInfoVO fileInfoVO = new FileInfoVO();
         fileInfoVO.setType("7");

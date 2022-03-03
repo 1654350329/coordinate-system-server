@@ -36,6 +36,7 @@ public class LoginLogServiceImpl extends ServiceImpl<LoginLogMapper, LoginLog> i
     public IPage<LoginLog> loginLogPage(LoginLogPageVO loginLogPageVO) {
         IPage<LoginLog> page = loginLogPageVO.getPage();
         QueryWrapper<LoginLog> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc(LoginLog.CREATED_TIME);
         if (StrUtil.isNotBlank(loginLogPageVO.getIp())) {
             wrapper.eq(LoginLog.IP, loginLogPageVO.getIp());
         }
@@ -55,12 +56,14 @@ public class LoginLogServiceImpl extends ServiceImpl<LoginLogMapper, LoginLog> i
     @Override
     public void updateLongTime(String userAccount) {
         try {
-            LoginLog loginLog = null;
             if (userAccount != null) {
-                loginLog = this.baseMapper.loginInfo(userAccount);
-            }
-            if (loginLog != null) {
+                LoginLog loginLog = this.baseMapper.selectOne(new QueryWrapper<LoginLog>()
+                        .eq(LoginLog.ACCOUNT, userAccount)
+                        .orderByDesc(LoginLog.CREATED_TIME)
+                        .last("limit 1"));
+
                 loginLog.setLongTime(loginLog.getCreatedTime() + " - " + DateUtil.now());
+                this.baseMapper.updateById(loginLog);
             }
         } catch (RuntimeException e) {
             e.printStackTrace();

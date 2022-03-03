@@ -26,17 +26,16 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         String ipAddresses = request.getRemoteAddr();
         String username = request.getParameter("username");
         LoginLog loginLog = new LoginLog();
-        loginLog.setErrorInfo(exception.getMessage());
+        String errorInfo = exception.getMessage().equals("Bad credentials") ? "用户名或密码错误，请重新输入" : exception.getMessage();
+        loginLog.setErrorInfo(errorInfo);
         loginLog.setErrorSort("账号或密码错误");
         loginLog.setIp(ipAddresses);
         loginLog.setAccount(username);
+        loginLog.setStatus(2);
         loginLogService.save(loginLog);
         response.setContentType("application/json;charset=UTF-8");
         ServletOutputStream outputStream = response.getOutputStream();
-        RestResponse result = RestResponse.fail(exception.getMessage());
-        if ("Bad credentials".equals(exception.getMessage())) {
-            result.setMsg("密码错误,请重新输入!");
-        }
+        RestResponse result = RestResponse.fail(errorInfo);
         outputStream.write(JSONUtil.toJsonStr(result).getBytes("UTF-8"));
 
         outputStream.flush();

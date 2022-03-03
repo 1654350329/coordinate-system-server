@@ -27,6 +27,9 @@ public class SysMenuVO {
     @NotBlank(message = "菜单授权码不能为空")
     private String perms;
 
+    @ApiModelProperty("菜单类型 0：目录   1:按钮")
+    private Integer type;
+
     @TableField(exist = false)
     private List<SysMenuVO> children = new ArrayList<>();
 }

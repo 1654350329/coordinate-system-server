@@ -7,20 +7,20 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.RoleManageMapper;
 import com.tree.clouds.coordination.mapper.RoleUserMapper;
 import com.tree.clouds.coordination.mapper.SysRoleMenuMapper;
-import com.tree.clouds.coordination.model.entity.RoleManage;
-import com.tree.clouds.coordination.model.entity.RoleUser;
-import com.tree.clouds.coordination.model.entity.SysRoleMenu;
-import com.tree.clouds.coordination.model.entity.UserManage;
+import com.tree.clouds.coordination.model.entity.*;
 import com.tree.clouds.coordination.model.vo.DistributeRoleVO;
 import com.tree.clouds.coordination.model.vo.RoleManagePageVO;
 import com.tree.clouds.coordination.service.RoleManageService;
+import com.tree.clouds.coordination.service.SysMenuService;
 import com.tree.clouds.coordination.service.UserManageService;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -39,6 +39,8 @@ public class RoleManageServiceImpl extends ServiceImpl<RoleManageMapper, RoleMan
     private SysRoleMenuMapper sysRoleMenuMapper;
     @Autowired
     private UserManageService userManageService;
+    @Autowired
+    private SysMenuService sysMenuService;
 
     @Override
     public List<UserManage> getUserInfoByRole(String roleName) {
@@ -54,11 +56,21 @@ public class RoleManageServiceImpl extends ServiceImpl<RoleManageMapper, RoleMan
     @Override
     @Transactional
     public void distributeRole(DistributeRoleVO distributeRoleVO) {
-        this.sysRoleMenuMapper.delete(new QueryWrapper<SysRoleMenu>().eq("role_Id", distributeRoleVO.getRoleId()));
+        this.sysRoleMenuMapper.delete(new QueryWrapper<SysRoleMenu>().eq(SysRoleMenu.ROLE_ID, distributeRoleVO.getRoleId()));
         List<String> menuIds = distributeRoleVO.getMenuIds();
+        Set<String> menuSet = new HashSet<>(menuIds);
+
         for (String menuId : menuIds) {
+            SysMenu sysMenu = this.sysMenuService.getById(menuId);
+            String pid = sysMenu.getParentId();
+            while (!pid.equals("0")) {
+                menuSet.add(pid);
+                pid = this.sysMenuService.getById(pid).getParentId();
+            }
+        }
+        for (String s : menuSet) {
             SysRoleMenu sysRoleMenu = new SysRoleMenu();
-            sysRoleMenu.setMenuId(menuId);
+            sysRoleMenu.setMenuId(s);
             sysRoleMenu.setRoleId(distributeRoleVO.getRoleId());
             this.sysRoleMenuMapper.insert(sysRoleMenu);
         }

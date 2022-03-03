@@ -1,10 +1,7 @@
 package com.tree.clouds.coordination.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.tree.clouds.coordination.model.entity.LoginLog;
-import com.tree.clouds.coordination.model.vo.LoginLogPageVO;
-import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -15,8 +12,4 @@ import org.apache.ibatis.annotations.Param;
  * @since 2022-01-02
  */
 public interface LoginLogMapper extends BaseMapper<LoginLog> {
-
-    IPage<LoginLog> loginLogPage(IPage<Object> page, @Param("loginLogPageVO") LoginLogPageVO loginLogPageVO);
-
-    LoginLog loginInfo(@Param("userAccount") String userAccount);
 }

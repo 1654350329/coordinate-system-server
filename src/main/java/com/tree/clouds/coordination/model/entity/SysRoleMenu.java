@@ -16,7 +16,8 @@ import lombok.Data;
 @Data
 public class SysRoleMenu {
 
-    private static final long serialVersionUID = 1L;
+    public static final String ROLE_ID = "role_id";
+    public static final String MENU_ID = "menu_id";
 
     @TableId(value = "id", type = IdType.UUID)
     private String id;
