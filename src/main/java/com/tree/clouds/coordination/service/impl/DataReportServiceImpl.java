@@ -3,7 +3,6 @@ package com.tree.clouds.coordination.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdcardUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.DataReportMapper;
@@ -11,18 +10,15 @@ import com.tree.clouds.coordination.model.bo.DataReportBO;
 import com.tree.clouds.coordination.model.entity.DataExamine;
 import com.tree.clouds.coordination.model.entity.DataReport;
 import com.tree.clouds.coordination.model.entity.FileInfo;
-import com.tree.clouds.coordination.model.entity.WritingBatch;
 import com.tree.clouds.coordination.model.vo.DataReportPageVO;
 import com.tree.clouds.coordination.model.vo.FileInfoVO;
 import com.tree.clouds.coordination.model.vo.UpdateDataReportVO;
 import com.tree.clouds.coordination.model.vo.WritingBatchVO;
-import com.tree.clouds.coordination.service.DataExamineService;
-import com.tree.clouds.coordination.service.DataReportService;
-import com.tree.clouds.coordination.service.FileInfoService;
-import com.tree.clouds.coordination.service.WritingBatchService;
+import com.tree.clouds.coordination.service.*;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.Transient;
 import java.util.List;
@@ -46,10 +42,12 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
     private DataExamineService dataExamineService;
     @Autowired
     private WritingBatchService writingBatchService;
+    @Autowired
+    private EvaluationSheetService evaluationSheetService;
     //手机号码正则匹配
     private static final String REGEX_MOBILE = "((\\+86|0086)?\\s*)((134[0-8]\\d{7})|(((13([0-3]|[5-9]))|(14[5-9])|15([0-3]|[5-9])|(16(2|[5-7]))|17([0-3]|[5-8])|18[0-9]|19(1|[8-9]))\\d{8})|(14(0|1|4)0\\d{7})|(1740([0-5]|[6-9]|[10-12])\\d{7}))";
 
-    @Transient
+    @Transactional
     public void addDataReport(UpdateDataReportVO updateDataReportVO) {
         if (!Pattern.matches(REGEX_MOBILE, updateDataReportVO.getPhoneNumber())) {
             throw new BaseBusinessException(400, "手机号码不合法");
@@ -61,6 +59,12 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         dataReport.setExamineProgress(DataReport.EXAMINE_PROGRESS_ZERO);
         dataReport.setUpdatedTime(DateUtil.now());
         this.save(dataReport);
+        if (updateDataReportVO.getSort() == 0 && updateDataReportVO.getBizFile().stream().noneMatch(fileInfoVO -> fileInfoVO.getType().equals("1"))) {
+            throw new BaseBusinessException(400, "认定伤病残决定书未上传!");
+        }
+        if (updateDataReportVO.getSort() == 1 && updateDataReportVO.getBizFile().stream().noneMatch(fileInfoVO -> fileInfoVO.getType().equals("2"))) {
+            throw new BaseBusinessException(400, "病例复印件未上传!");
+        }
         fileInfoService.saveFileInfo(updateDataReportVO.getBizFile(), dataReport.getReportId());
     }
 
@@ -68,6 +72,12 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
     public void updateDataReport(UpdateDataReportVO updateDataReportVO) {
         if (dataExamineService.getReportStatus(updateDataReportVO.getReportId())) {
             throw new BaseBusinessException(400, "已审核完成,无法修改!");
+        }
+        if (!Pattern.matches(REGEX_MOBILE, updateDataReportVO.getPhoneNumber())) {
+            throw new BaseBusinessException(400, "手机号码不合法");
+        }
+        if (!IdcardUtil.isValidCard(updateDataReportVO.getIdCart())) {
+            throw new BaseBusinessException(400, "身份证不合法");
         }
         DataReport dataReport = BeanUtil.toBean(updateDataReportVO, DataReport.class);
         dataReport.setExamineProgress(0);
@@ -108,22 +118,32 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
                 report.setDel(1);
                 report.setStatus(1);
                 report.setRemark(remark);
-                report.setLink(report.getExamineProgress());
+                report.setLink(report.getExamineProgress() + 1);
                 this.updateById(report);
+                //获取文件并重新保存
+                List<FileInfo> file = this.fileInfoService.getByBizIdsAndType(report.getReportId(), null);
                 //重新生成新的上报资料
                 report.setReportId(null);
                 report.setDel(0);
                 report.setExamineProgress(0);
                 this.save(report);
+                file.forEach(fileInfo -> {
+                    fileInfo.setBizId(report.getReportId());
+                    fileInfo.setFileId(null);
+                });
+                this.fileInfoService.saveBatch(file);
                 //从任务组中移除
-                QueryWrapper<WritingBatch> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq(WritingBatch.REPORT_ID, reportId);
-                writingBatchService.remove(queryWrapper);
+                writingBatchService.removeByReportId(reportId);
+                String writingBatchId = writingBatchService.getByReportId(reportId);
+                if (writingBatchId != null && evaluationSheetService.isCompleteStatus(writingBatchId)) {
+                    evaluationSheetService.updateCompleteStatus(writingBatchId);
+                }
             }
         } else {
             List<DataReport> reports = reportIds.stream().map(id -> {
                 DataReport dataReport = new DataReport();
                 dataReport.setReportId(id);
+                dataReport.setStatus(0);
                 dataReport.setExamineProgress(progressStatus);
                 return dataReport;
             }).collect(Collectors.toList());

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.beans.Transient;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +61,7 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
             throw new BaseBusinessException(400, "已完成鉴定无法修改!");
         }
         //修改审核进度为到复核一
-        dataReportService.updateDataExamine(Collections.singletonList(appraise.getReportId()), DataReport.EXAMINE_PROGRESS_FOUR, null);
+        dataReportService.updateDataExamine(Collections.singletonList(appraise.getReportId()), DataReport.EXAMINE_PROGRESS_THREE, null);
         DataReport report = new DataReport();
         report.setReportId(appraise.getReportId());
         report.setSickCondition(appraiseVO.getSickCondition());
@@ -90,8 +91,8 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
     }
 
     @Override
-    public Integer getAppraiseNumber(String time) {
-        String appraiseNumber = this.baseMapper.getAppraiseNumber(time);
+    public Integer getAppraiseNumber(String time, String type) {
+        String appraiseNumber = this.baseMapper.getAppraiseNumber(time, type);
         if (appraiseNumber == null) {
             return 0;
         }
@@ -181,4 +182,26 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
         return appraiseInfo;
     }
 
+    @Override
+    public void saveAppraise(List<String> reportIds, String writingBatchId) {
+        //生成认定编号
+        Calendar now = Calendar.getInstance();
+        String year = now.get(Calendar.YEAR) + "";
+        int month = now.get(Calendar.DAY_OF_MONTH);
+        String m = month < 10 ? "0" + month : String.valueOf(month);
+        String type = writingBatchId.contains("工") ? "工" : "病";
+        Integer appraiseNumber = appraiseService.getAppraiseNumber(year + "-" + m, type);
+        //添加到鉴定信息表
+        List<Appraise> appraises = new ArrayList<>();
+        for (String reportId : reportIds) {
+            appraiseNumber = appraiseNumber + 1;
+            Appraise appraise = new Appraise();
+            appraise.setWritingBatchId(writingBatchId);
+            appraise.setAppraiseStatus(0);
+            appraise.setReportId(reportId);
+            appraise.setAppraiseNumber(String.format("%04d", appraiseNumber));//认定编号
+            appraises.add(appraise);
+        }
+        this.saveBatch(appraises);
+    }
 }

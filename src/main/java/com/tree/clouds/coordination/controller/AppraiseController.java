@@ -54,15 +54,6 @@ public class AppraiseController {
         return RestResponse.ok(true);
     }
 
-//    @Log("专家组信息")
-//    @PostMapping("/ExpertGroupInfo")
-//    @ApiOperation(value = "专家组信息")
-////    @PreAuthorize("hasAuthority('appraise:appraise:add')")
-//    public RestResponse<List<ExpertGroupInfo>> ExpertGroupInfo(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
-//        List<ExpertGroupInfo> userManages = appraiseService.expertGroupInfo(publicIdReqVO.getId());
-//        return RestResponse.ok(userManages);
-//    }
-
     @Log("鉴定意见")
     @PostMapping("/AppraiseInfoVO")
     @ApiOperation(value = "鉴定意见 id为 reportId")

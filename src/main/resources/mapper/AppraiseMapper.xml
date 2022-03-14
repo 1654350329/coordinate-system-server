@@ -54,7 +54,7 @@
     <select id="getAppraiseNumber" resultType="java.lang.String">
         select APPRAISE_NUMBER
         from appraise
-        where CREATED_TIME like CONCAT(#{time},'%')
+        where CREATED_TIME like #{time}'%' and WRITING_BATCH_ID like '%'#{type}'%'
         ORDER BY CREATED_TIME DESC limit 1
     </select>
     <select id="expertGroupInfo" resultType="com.tree.clouds.coordination.model.vo.ExpertGroupInfo">

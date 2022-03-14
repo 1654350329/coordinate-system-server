@@ -61,7 +61,7 @@ public class DataExamineServiceImpl extends ServiceImpl<DataExamineMapper, DataE
             if (dataExamineVO.getStatus() == 0) {
                 dataReportService.updateDataExamine(Collections.singletonList(report.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, dataExamineVO.getExamineDescribe());
             } else {
-                dataReportService.updateDataExamine(Collections.singletonList(report.getReportId()), DataReport.EXAMINE_PROGRESS_THREE, null);
+                dataReportService.updateDataExamine(Collections.singletonList(report.getReportId()), DataReport.EXAMINE_PROGRESS_TWO, null);
             }
 
         }

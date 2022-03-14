@@ -17,7 +17,7 @@ public class AppraisalReviewVO {
     @ApiModelProperty(value = "复核结果 0反驳 1同意")
     private int appraisalReviewResult;
 
-    @NotBlank(message = "复核意见不能为空")
+//    @NotBlank(message = "复核意见不能为空")
     @ApiModelProperty(value = "复核意见")
     private String remark;
 

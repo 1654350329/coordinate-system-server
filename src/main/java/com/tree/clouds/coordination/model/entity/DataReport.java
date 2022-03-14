@@ -43,7 +43,7 @@ public class DataReport extends BaseEntity {
     public static final String EXAMINE_DESCRIBE = "EXAMINE_DESCRIBE";
     public static final String EXAMINE_TIME = "EXAMINE_TIME";
     public static final String EXAMINE_USER = "EXAMINE_USER";
-    //审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签
+    //审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签 7送达 8待鉴定
     public static final int EXAMINE_PROGRESS_ZERO = 0;
     public static final int EXAMINE_PROGRESS_ONE = 1;
     public static final int EXAMINE_PROGRESS_TWO = 2;
@@ -52,6 +52,7 @@ public class DataReport extends BaseEntity {
     public static final int EXAMINE_PROGRESS_FIVE = 5;
     public static final int EXAMINE_PROGRESS_SIX = 6;
     public static final int EXAMINE_PROGRESS_SEVEN = 7;
+    public static final int EXAMINE_PROGRESS_EIGHT = 8;
     private static final long serialVersionUID = 1L;
     @ApiModelProperty(value = "主键")
     @TableId(value = REPORT_ID, type = IdType.UUID)
@@ -83,7 +84,7 @@ public class DataReport extends BaseEntity {
 
     @ApiModelProperty(value = "类型(0 工 1病)")
     @TableField(SORT)
-    private int sort;
+    private Integer sort;
 
     @ApiModelProperty(value = "科别")
     @TableField(CATEGORY)
@@ -113,13 +114,13 @@ public class DataReport extends BaseEntity {
     @TableField(ADDRESS)
     private String address;
 
-    @ApiModelProperty(value = "审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签")
+    @ApiModelProperty(value = "审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签 7送达")
     @TableField(EXAMINE_PROGRESS)
-    private int examineProgress;
+    private Integer examineProgress;
 
     @ApiModelProperty(value = "审核状态 1失败 0成功")
     @TableField("status")
-    private int status;
+    private Integer status;
 
     @ApiModelProperty(value = "驳回审核意见")
     @TableField("remark")
@@ -127,6 +128,6 @@ public class DataReport extends BaseEntity {
 
     @ApiModelProperty(value = "审核环节 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签")
     @TableField("link")
-    private int link;
+    private Integer link;
 
 }

@@ -64,6 +64,10 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
 
     @Autowired
     private FileInfoService fileInfoService;
+    @Autowired
+    private QiniuUtil qiniuUtil;
+    @Autowired
+    private SmsUtil smsUtil;
 
     @Override
     @Transient
@@ -71,7 +75,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         //修改资料上报任务状态
         List<DataReport> dataReports = dataReportService.listByIds(ids);
         check(dataReports);
-        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE, null);
+        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_EIGHT, null);
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;
@@ -99,17 +103,18 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         check(dataReports);
         int sort = writingBatchId.contains("工") ? 0 : 1;
         if (sort != dataReports.get(0).getSort()) {
-            throw new BaseBusinessException(500, "与现在加入的批次号必须一致");
+            throw new BaseBusinessException(500, "与现在加入的工伤病类型必须一致");
         }
-        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_THREE, null);
+        dataReportService.updateDataExamine(ids, DataReport.EXAMINE_PROGRESS_EIGHT, null);
         EvaluationSheet evaluationSheet = this.getByWritingBatchId(writingBatchId);
         evaluationSheet.setEvaluationNumber(evaluationSheet.getEvaluationNumber() + ids.size());
         this.writingBatchService.saveBatchInfo(writingBatchId, ids);
+        this.appraiseService.saveAppraise(ids, writingBatchId);
     }
 
     private void check(List<DataReport> dataReports) {
         for (DataReport dataReport : dataReports) {
-            if (dataReports.get(0).getSort() != dataReport.getSort()) {
+            if (!dataReports.get(0).getSort().equals(dataReport.getSort())) {
                 throw new BaseBusinessException(500, "创建待审类型必须一致");
             }
             if (writingBatchService.getEvaluationSheetStatus(dataReport.getReportId())) {
@@ -297,7 +302,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     @Override
     public Boolean releaseEvaluation(EvaluationReleaseVO evaluationReleaseVO) {
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(evaluationReleaseVO.getWritingBatchId());
-        if (this.appraiseService.getByWritingBatchId(evaluationSheet.getWritingBatchId()) != null) {
+        if (evaluationSheet.getReleaseStatus() == 1) {
             throw new BaseBusinessException(400, "已发布,不能重复发布!");
         }
         int evaluationCount = this.evaluationSheetDetailMapper.selectEvaluationCount(evaluationSheet.getEvaluationId());
@@ -315,27 +320,12 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
 
         List<String> reportIds = writingBatchService.getReportByWritingBatchId(evaluationReleaseVO.getWritingBatchId());
         //修改审核进度待鉴定
-        dataReportService.updateDataExamine(reportIds, DataReport.EXAMINE_PROGRESS_FOUR, null);
+        dataReportService.updateDataExamine(reportIds, DataReport.EXAMINE_PROGRESS_THREE, null);
         List<EvaluationSheetDetail> sheetDetails = this.evaluationSheetDetailMapper.getByEvaluationId(evaluationSheet.getEvaluationId());
         //获取参评专家id
         List<String> userIds = sheetDetails.stream().filter(evaluationSheetDetail -> evaluationSheetDetail.getParticipationStatus() == 1).map(EvaluationSheetDetail::getUserId).collect(Collectors.toList());
 
-        //生成认定编号
-        Calendar now = Calendar.getInstance();
-        String year = now.get(Calendar.YEAR) + "";
-        int month = now.get(Calendar.DAY_OF_MONTH);
-        String m = month < 10 ? "0" + month : String.valueOf(month);
-        Integer appraiseNumber = appraiseService.getAppraiseNumber(year + "-" + m);
-        //添加到鉴定信息表
-        for (String reportId : reportIds) {
-            appraiseNumber = appraiseNumber + 1;
-            Appraise appraise = new Appraise();
-            appraise.setWritingBatchId(evaluationReleaseVO.getWritingBatchId());
-            appraise.setAppraiseStatus(0);
-            appraise.setReportId(reportId);
-            appraise.setAppraiseNumber(String.format("%04d", appraiseNumber));//认定编号
-            appraiseService.save(appraise);
-        }
+        appraiseService.saveAppraise(reportIds, evaluationReleaseVO.getWritingBatchId());
 
         List<UserManage> userManages = userManageService.listByIds(userIds);
         try {
@@ -349,7 +339,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         //发送短信通知专家
         CompletableFuture.runAsync(() -> {
             String content = String.format("【南平市】经研究，定于%s，在%s召开相关类别的因病和工伤职工劳动能力鉴定会，时间半天。", evaluationReleaseVO.getReleaseTime(), evaluationReleaseVO.getReleaseAddress());
-            SmsUtil.endMs(content, phones);
+            smsUtil.endMs(content, phones);
         });
 
         return true;
@@ -452,10 +442,10 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         for (int i = 0; i < userManages.size(); i++) {
             Map<String, Object> dateMap = new LinkedHashMap<>();
             dateMap.put("index", i + 1);
-            dateMap.put("name", userManages.get(0).getUserName());
-            dateMap.put("titleGrade", userManages.get(0).getTitleGrade());
-            dateMap.put("unit", userManages.get(0).getUnit());
-            dateMap.put("remark", userManages.get(0).getRemark());
+            dateMap.put("name", userManages.get(i).getUserName());
+            dateMap.put("titleGrade", userManages.get(i).getTitleGrade());
+            dateMap.put("unit", userManages.get(i).getUnit());
+            dateMap.put("remark", userManages.get(i).getRemark());
             listDate.add(dateMap);
         }
         HashMap<String, Object> info = new HashMap<String, Object>() {{
@@ -465,7 +455,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             put("date", now.get(Calendar.DAY_OF_MONTH));//当前日
             put("time", evaluationReleaseVO.getReleaseTime());//时间
             put("address", evaluationReleaseVO.getReleaseAddress());//地址
-            put("number", userManages.size());//地址
+            put("number", userManages.size());//人数
 
         }};
         String resource = this.getClass().getClassLoader().getResource("file.docx").getFile();
@@ -484,8 +474,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         template.write(fos);
         String file = Word2PdfUtil.doc2Img(Constants.TMP_HOME + fileName, Constants.TMP_HOME);
         //上传文件
-        String fileKey = QiniuUtil.fileUpload(file);
-//        StorePath storePath = this.storageClient.uploadFile(new FileInputStream(Constants.TMP_HOME + fileName), new File(Constants.TMP_HOME + fileName).length(), formatSuffix, null);
+        String fileKey = qiniuUtil.fileUpload(file);
         FileInfoVO fileInfoVO = new FileInfoVO();
         fileInfoVO.setType("7");
         fileInfoVO.setFilePath(fileKey);

@@ -25,6 +25,10 @@ public class AppraiseVO {
     @ApiModelProperty(value = "伤残病情况")
     private String sickCondition;
 
+    @NotNull(message = "目前伤残情况")
+    @ApiModelProperty(value = "目前伤残情况")
+    private String resultSickCondition;
+
     @NotBlank(message = "最终等级(结论)不能为空")
     @ApiModelProperty(value = "最终等级(结论)")
     private String appraiseResult;

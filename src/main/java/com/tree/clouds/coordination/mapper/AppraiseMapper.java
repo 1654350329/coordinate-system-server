@@ -22,7 +22,7 @@ public interface AppraiseMapper extends BaseMapper<Appraise> {
 
     IPage<AppraiseBO> appraisePage(IPage<AppraiseBO> page, @Param("appraisePageVO") AppraisePageVO appraisePageVO);
 
-    String getAppraiseNumber(@Param("time") String time);
+    String getAppraiseNumber(@Param("time") String time, @Param("type") String type);
 
     List<ExpertGroupInfo> expertGroupInfo(@Param("reportId") String reportId);
 }

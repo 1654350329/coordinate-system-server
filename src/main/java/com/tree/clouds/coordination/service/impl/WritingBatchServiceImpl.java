@@ -45,4 +45,22 @@ public class WritingBatchServiceImpl extends ServiceImpl<WritingBatchMapper, Wri
     public boolean getEvaluationSheetStatus(String reportId) {
         return CollUtil.isNotEmpty(this.list(new QueryWrapper<WritingBatch>().eq(WritingBatch.REPORT_ID, reportId)));
     }
+
+    @Override
+    public void removeByReportId(String reportId) {
+        QueryWrapper<WritingBatch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(WritingBatch.REPORT_ID, reportId);
+        this.remove(queryWrapper);
+    }
+
+    @Override
+    public String getByReportId(String reportId) {
+        QueryWrapper<WritingBatch> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(WritingBatch.REPORT_ID, reportId);
+        WritingBatch writingBatch = this.getOne(queryWrapper);
+        if (writingBatch == null) {
+            return null;
+        }
+        return writingBatch.getWritingBatchId();
+    }
 }

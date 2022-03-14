@@ -46,17 +46,17 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
     @Override
     public Boolean addAppraisalReview(AppraisalReviewVO appraisalReviewVO) {
         AppraisalReview review = this.getById(appraisalReviewVO.getAppraiseResultId());
-        if (review.getAppraisalReviewStatus().equals(2)) {
+        if (review.getAppraisalReviewStatus().equals(2) || (review.getAppraisalReviewResult() != null && review.getAppraisalReviewResult() == 0)) {
             throw new BaseBusinessException(400, "已完成鉴定,不允许修改!");
         }
         AppraisalReview appraisalReview = new AppraisalReview();
         appraisalReview.setAppraiseResultId(appraisalReviewVO.getAppraiseResultId());
         appraisalReview.setRemark(appraisalReviewVO.getRemark());//最终意见
         appraisalReview.setAppraisalReviewResult(appraisalReviewVO.getAppraisalReviewResult());
+        //同意
         if (appraisalReviewVO.getAppraisalReviewResult() == 1) {
-            //反驳打回
             if (review.getAppraisalReviewStatus().equals(0)) {
-                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_FIVE, null);
+                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_FOUR, null);
                 appraisalReview.setAppraisalReviewStatus(1);
                 appraisalReview.setAppraisalReviewTimeOne(appraisalReviewVO.getAppraisalReviewTime());
                 appraisalReview.setAppraisalReviewUserOne(LoginUserUtil.getUserId());
@@ -65,7 +65,7 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
                 this.updateById(appraisalReview);
             }
             if (review.getAppraisalReviewStatus().equals(1)) {
-                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_SIX, null);
+                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_FIVE, null);
                 appraisalReview.setAppraisalReviewStatus(2);
                 appraisalReview.setAppraisalReviewTimeTwo(appraisalReviewVO.getAppraisalReviewTime());
                 appraisalReview.setAppraisalReviewResultTwo(appraisalReviewVO.getAppraisalReviewResult());
@@ -80,16 +80,17 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
                 reviewSignature.setReviewStatus(0);
                 reviewSignatureService.save(reviewSignature);
             }
-        } else {
-            if (appraisalReviewVO.getAppraisalReviewResult() == 0) {
+        } else if (appraisalReviewVO.getAppraisalReviewResult() == 0) {
+            //一核驳回
+            if (review.getAppraisalReviewStatus().equals(0)) {
                 appraisalReview.setAppraisalReviewStatus(1);
                 appraisalReview.setAppraisalReviewTimeOne(appraisalReviewVO.getAppraisalReviewTime());
                 appraisalReview.setAppraisalReviewUserOne(LoginUserUtil.getUserId());
                 appraisalReview.setAppraisalReviewResultOne(appraisalReviewVO.getAppraisalReviewResult());
                 appraisalReview.setRemarkOne(appraisalReviewVO.getRemark());
             }
+            //二核驳回
             if (review.getAppraisalReviewStatus().equals(1)) {
-                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_SIX, null);
                 review.setAppraisalReviewStatus(2);
                 appraisalReview.setAppraisalReviewTimeTwo(appraisalReviewVO.getAppraisalReviewTime());
                 appraisalReview.setAppraisalReviewResultTwo(appraisalReviewVO.getAppraisalReviewResult());
@@ -98,7 +99,7 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
             }
             //反驳打回初审状态
             this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, appraisalReviewVO.getRemark());
-            appraisalReview.setAppraisalReviewStatus(0);
+            appraisalReview.setAppraisalReviewResult(0);
 
             this.updateById(appraisalReview);
 

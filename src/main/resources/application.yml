@@ -15,7 +15,7 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 100MB
-##选用缓存类型
+  ##选用缓存类型
   redis:
     host: 127.0.0.1
     #    password:
@@ -54,7 +54,13 @@ markerhub:
     secret: ji8n3439n439n43ld9ne9343fdfer49h
 
 qiniu:
-  accessKey: BGUpQznLLmK0W230OZBiAoaCuavRh
+  accessKey: BGUpQznLLmK0W230OZBiAoaCuavRh-7OYSnLFdtT
   secretKey: x_OuqdffUQwKLDM0bhOJIA6Mv9Ac37qFe1g21ywb
   bucket: xpwgh
   fontUrl: https://xpwghoss.3dy.me/
+
+sms:
+  account: 123162
+  password: naKfTX
+  extno: 10690371
+  url: http://47.99.242.143:7862/sms

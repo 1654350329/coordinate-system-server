@@ -70,6 +70,10 @@ public class Appraise extends BaseEntity {
     @TableField("APPRAISE_RESULT")
     private String appraiseResult;
 
+    @ApiModelProperty(value = "目前伤残情况")
+    @TableField("RESULT_SICK_CONDITION")
+    private String resultSickCondition;
+
     @ApiModelProperty(value = "附件")
     @TableField(exist = false)
     private List<String> files;

@@ -1,20 +1,39 @@
 package com.tree.clouds.coordination.utils;
 
 import cn.hutool.http.HttpUtil;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+@Data
+@Component
+@ConfigurationProperties(prefix = "sms")
 public class SmsUtil {
-    private static String account = "123162";
-    private static String password = "naKfTX";
-    private static String extno = "10690371";
-    private static String url = "http://47.99.242.143:7862/sms";
+    //    private String account = "123162";
+//    private String password = "naKfTX";
+//    private String extno = "10690371";
+//    private String url = "http://47.99.242.143:7862/sms";
+    private String account;
+    private String password;
+    private String extno;
+    private String url;
 
+    public static void main(String[] args) {
 
-    public static void endMs(String content, List<String> phones) {
+//        endMs("【测试】测试", Collections.singletonList("15280165562"));
+//        HashMap<String, Object> paramMap = new HashMap<>();
+//        paramMap.put("action", "balance");
+//        paramMap.put("account", account);
+//        paramMap.put("rt", "json");
+//        String result= HttpUtil.post("http://47.99.242.143:7862/sms", paramMap);
+//        System.out.println("result = " + result);
+    }
+
+    public void endMs(String content, List<String> phones) {
         String phone = String.join(",", phones);
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("action", "send");
@@ -25,17 +44,5 @@ public class SmsUtil {
         paramMap.put("extno", extno);
         paramMap.put("rt", "json");
         String result = HttpUtil.post(url, paramMap);
-        System.out.println("result = " + result);
-    }
-
-    public static void main(String[] args) {
-
-        endMs("【测试】测试", Collections.singletonList("15280165562"));
-//        HashMap<String, Object> paramMap = new HashMap<>();
-//        paramMap.put("action", "balance");
-//        paramMap.put("account", account);
-//        paramMap.put("rt", "json");
-//        String result= HttpUtil.post("http://47.99.242.143:7862/sms", paramMap);
-//        System.out.println("result = " + result);
     }
 }

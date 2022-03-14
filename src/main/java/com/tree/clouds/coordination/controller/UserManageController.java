@@ -105,7 +105,6 @@ public class UserManageController {
     @GetMapping("/exportUser")
     @ApiOperation(value = "导出用户")
     @Log("导出用户")
-//    @PreAuthorize("hasAuthority('user:manage:export')")
     public void exportUser(PublicIdsReqVO publicIdsReqVO, HttpServletResponse response) {
         userManageservice.exportUser(publicIdsReqVO.getIds(), response);
     }

@@ -6,7 +6,6 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 @Data
@@ -43,7 +42,7 @@ public class UpdateDataReportVO {
 
     @ApiModelProperty(value = "类型(0 工 1病)")
     @NotNull(message = "类型不能为空")
-    private int sort;
+    private Integer sort;
 
     @ApiModelProperty(value = "科别")
     @NotBlank(message = "科别不能为空")
@@ -69,7 +68,7 @@ public class UpdateDataReportVO {
     private String phoneNumber;
 
     @ApiModelProperty(value = "地址")
-    @Size(min = 6, max = 30, message = "地址应该在6-30字符之间")
+//    @Size(min = 6, max = 30, message = "地址应该在6-30字符之间")
     private String address;
 
     @ApiModelProperty(value = "文件")

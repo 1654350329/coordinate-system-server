@@ -44,6 +44,8 @@ public class WritingResultServiceImpl implements WritingResultService {
 
     @Autowired
     private ReviewSignatureService reviewSignatureService;
+    @Autowired
+    private QiniuUtil qiniuUtil;
 
 
     @Override
@@ -71,7 +73,9 @@ public class WritingResultServiceImpl implements WritingResultService {
             messageInfo.setReportId(appraise.getReportId());
             messageInfoService.save(messageInfo);
             //文件保存
-            FileInfoVO fileInfoVO = wordBuild(dataReport.getSort(), dataReport.getUnitName(), dataReport.getIdentifiedName(), dataReport.getIdCart(), appraise.getAppraiseNumber(), dataReport.getSickCondition(), appraise.getAppraiseResult());
+            FileInfoVO fileInfoVO = wordBuild(dataReport.getSort(), dataReport.getUnitName(), dataReport.getIdentifiedName(),
+                    dataReport.getIdCart(), appraise.getAppraiseNumber(), dataReport.getSickCondition(), appraise.getAppraiseResult(),
+                    appraise.getResultSickCondition());
             this.fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), messageInfo.getMessageId());
         } catch (IOException e) {
             e.printStackTrace();
@@ -88,7 +92,7 @@ public class WritingResultServiceImpl implements WritingResultService {
         return writingFile;
     }
 
-    public FileInfoVO wordBuild(int sort, String unit, String name, String idCart, String number, String sickCondition, String appraiseResult) throws IOException {
+    public FileInfoVO wordBuild(int sort, String unit, String name, String idCart, String number, String sickCondition, String appraiseResult, String resultSickCondition) throws IOException {
         Calendar now = Calendar.getInstance();
         HashMap<String, Object> info = new HashMap<String, Object>() {{
             put("year", now.get(Calendar.YEAR));//当前年
@@ -96,18 +100,24 @@ public class WritingResultServiceImpl implements WritingResultService {
             put("date", now.get(Calendar.DAY_OF_MONTH));//当前日
             put("name", name);//时间
             put("idCart", idCart);//身份证
-            put("number", number);//编号
+            put("appraiseNumber", number);//编号
             put("sickCondition", sickCondition);//病残情况
             put("appraiseResult", appraiseResult);//鉴定结论
+            put("resultSickCondition", appraiseResult);//鉴定结论
             put("unit", unit);//单位
         }};
-        String resource;
-        if (sort == 0 && unit == null) {
-            resource = this.getClass().getClassLoader().getResource("result.docx").getFile();
-        } else {
-            resource = this.getClass().getClassLoader().getResource("result2.docx").getFile();
-        }
+        String resource = null;
+        //病无单位
         if (sort == 1) {
+            if (StrUtil.isBlank(unit)) {
+                resource = this.getClass().getClassLoader().getResource("result.docx").getFile();
+            } else {
+                //病有单位
+                resource = this.getClass().getClassLoader().getResource("result2.docx").getFile();
+            }
+        }
+        //工
+        if (sort == 0) {
             resource = this.getClass().getClassLoader().getResource("result3.docx").getFile();
         }
         //渲染表格  动态行
@@ -122,7 +132,7 @@ public class WritingResultServiceImpl implements WritingResultService {
         FileOutputStream fos = new FileOutputStream(Constants.TMP_HOME + fileName);
         template.write(fos);
         String file = Word2PdfUtil.doc2Img(Constants.TMP_HOME + fileName, Constants.TMP_HOME);
-        String fileKey = QiniuUtil.fileUpload(file);
+        String fileKey = qiniuUtil.fileUpload(file);
         FileInfoVO fileInfoVO = new FileInfoVO();
         fileInfoVO.setType("6");
         fileInfoVO.setFilePath(fileKey);

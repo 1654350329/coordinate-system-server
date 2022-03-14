@@ -8,10 +8,11 @@
         APPRAISE_RESULT_ID, WRITING_BATCH_ID, APPRAISAL_REVIEW_STATUS, APPRAISAL_REVIEW_RESULT, APPRAISAL_REVIEW_TIME, APPRAISAL_REVIEW_USER, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="appraisalReviewPage" resultType="com.tree.clouds.coordination.model.bo.AppraisalReviewBO">
-        select
+        select c.USER_NAME as UPDATED_USER,
         a.remark,b.*,a.APPRAISE_RESULT_ID,a.WRITING_BATCH_ID,a.APPRAISE_NUMBER,a.APPRAISAL_REVIEW_STATUS,a.APPRAISAL_REVIEW_RESULT
         from appraisal_review a
         left JOIN data_report b on a.report_ID=b.report_ID
+        left JOIN user_manage c on a.UPDATED_USER=c.USER_ID
         where 1=1
         <if test="appraisalReviewPageVO.writingBatchId != null and appraisalReviewPageVO.writingBatchId !=''">
             and a.WRITING_BATCH_ID like CONCAT('%',#{appraisalReviewPageVO.writingBatchId},'%')

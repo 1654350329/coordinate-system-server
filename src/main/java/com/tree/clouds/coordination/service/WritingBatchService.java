@@ -32,4 +32,8 @@ public interface WritingBatchService extends IService<WritingBatch> {
      * @return
      */
     boolean getEvaluationSheetStatus(String reportId);
+
+    void removeByReportId(String reportId);
+
+    String getByReportId(String reportId);
 }

@@ -53,9 +53,10 @@ public class ReviewSignatureServiceImpl extends ServiceImpl<ReviewSignatureMappe
         reviewSignature.setReviewUser(LoginUserUtil.getUserId());
         if (reviewSignatureVO.getReviewResult().equals("1")) {
             //审核进度完成
-            dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_SEVEN, null);
+            dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_SIX, null);
             reviewSignature.setReviewResult(1);
             reviewSignature.setReviewStatus(1);
+            //
         } else {
             //审核进度失败驳回
             dataReportService.updateDataExamine(Collections.singletonList(signature.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, reviewSignatureVO.getRemark());

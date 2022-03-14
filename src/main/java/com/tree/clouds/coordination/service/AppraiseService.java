@@ -30,14 +30,16 @@ public interface AppraiseService extends IService<Appraise> {
     /**
      * 获取认定批号
      *
-     * @param s
+     * @param data
      * @return
      */
-    Integer getAppraiseNumber(String s);
+    Integer getAppraiseNumber(String data, String type);
 
     Appraise getByReportId(String reportId);
 
     List<ExpertGroupInfo> expertGroupInfo(String reportId);
 
     AppraiseInfoVO appraiseInfoVO(String reportId);
+
+    void saveAppraise(List<String> reportIds, String writingBatchId);
 }

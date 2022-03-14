@@ -12,4 +12,7 @@ public class UserManagePageVO extends PageParam {
 
     @ApiModelProperty(value = "分组id")
     private String groupId;
+
+    @ApiModelProperty(value = "角色名称")
+    private String roleName;
 }

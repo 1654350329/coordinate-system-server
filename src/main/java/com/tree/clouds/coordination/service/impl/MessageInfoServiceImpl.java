@@ -5,11 +5,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.MessageInfoMapper;
 import com.tree.clouds.coordination.model.bo.MessageInfoBO;
+import com.tree.clouds.coordination.model.entity.DataReport;
 import com.tree.clouds.coordination.model.entity.MessageInfo;
 import com.tree.clouds.coordination.model.vo.MessageInfoPage;
+import com.tree.clouds.coordination.service.DataReportService;
 import com.tree.clouds.coordination.service.MessageInfoService;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 /**
  * <p>
@@ -21,6 +26,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MessageInfoServiceImpl extends ServiceImpl<MessageInfoMapper, MessageInfo> implements MessageInfoService {
+
+    @Autowired
+    private DataReportService dataReportService;
 
     @Override
     public IPage<MessageInfoBO> messageInfoPage(MessageInfoPage messageInfoPage) {
@@ -44,6 +52,7 @@ public class MessageInfoServiceImpl extends ServiceImpl<MessageInfoMapper, Messa
         messageInfo.setCompletionTime(time);
         messageInfo.setMessageStatus("1");
         this.updateById(messageInfo);
+        dataReportService.updateDataExamine(Collections.singletonList(messageInfo.getReportId()), DataReport.EXAMINE_PROGRESS_SEVEN, null);
     }
 
     @Override
