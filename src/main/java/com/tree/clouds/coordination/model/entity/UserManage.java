@@ -68,13 +68,13 @@ public class UserManage extends BaseEntity {
 
     @ExcelProperty("工作单位")
     @ApiModelProperty(value = "工作单位")
-    @NotBlank(message = "姓名不能为空")
+    @NotBlank(message = "工作单位不能为空")
     @TableField(UNIT)
     private String unit;
 
     @ExcelProperty(value = "性别")
     @ApiModelProperty(value = "性别 中文 男 女")
-    @NotBlank(message = "姓名不能为空")
+    @NotBlank(message = "性别不能为空")
     @TableField(SEX)
     private String sex;
 

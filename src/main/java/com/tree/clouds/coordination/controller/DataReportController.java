@@ -4,11 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.common.aop.Log;
 import com.tree.clouds.coordination.model.bo.DataReportBO;
+import com.tree.clouds.coordination.model.entity.Dictionary;
 import com.tree.clouds.coordination.model.vo.DataReportPageVO;
 import com.tree.clouds.coordination.model.vo.PublicIdReqVO;
 import com.tree.clouds.coordination.model.vo.PublicIdsReqVO;
 import com.tree.clouds.coordination.model.vo.UpdateDataReportVO;
 import com.tree.clouds.coordination.service.DataReportService;
+import com.tree.clouds.coordination.service.DictionaryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -39,6 +38,9 @@ public class DataReportController {
     @Autowired
     private DataReportService dataReportService;
 
+    @Autowired
+    private DictionaryService dictionaryService;
+
     @PostMapping("/dataReportPage")
     @ApiOperation(value = "资料上报分页查询")
     @Log("资料上报分页查询")
@@ -53,10 +55,26 @@ public class DataReportController {
     @Log("资料上报数据字典")
 //    @PreAuthorize("hasAuthority('data:report:list')")
     public RestResponse<Map> dataList() {
+        List<Dictionary> dictionaries = dictionaryService.list();
+        List<String> categoryS = new ArrayList<>();
+        List<String> types = new ArrayList<>();
+        List<String> titleGrades = new ArrayList<>();
+
+        for (Dictionary dictionary : dictionaries) {
+            if (dictionary.getDictionaryType().equals("category")) {
+                categoryS.add(dictionary.getName());
+            }
+            if (dictionary.getDictionaryType().equals("type")) {
+                types.add(dictionary.getName());
+            }
+            if (dictionary.getDictionaryType().equals("titleGrade")) {
+                titleGrades.add(dictionary.getName());
+            }
+        }
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("category", Arrays.asList("骨科", "烧伤科", "眼科", "呼吸科", "消化科"));
-        map.put("type", Arrays.asList("委托任务", "指标任务"));
-        map.put("titleGrade", Arrays.asList("正高级", "副高级", "中级", "助理级", "员级"));
+        map.put("category", categoryS);
+        map.put("type", types);
+        map.put("titleGrade", titleGrades);
         Map<Integer, String> sortMap = new HashMap();
         sortMap.put(0, "工");
         sortMap.put(1, "病");
@@ -70,14 +88,6 @@ public class DataReportController {
         examineProgressMap.put(5, "复核二");
         examineProgressMap.put(6, "认定审签");
         map.put("examineProgressMap", examineProgressMap);
-        Map<Integer, String> statusMap = new HashMap();
-        statusMap.put(0, "正常");
-        statusMap.put(1, "驳回");
-        map.put("status", statusMap);
-        Map<Integer, String> categoryMap = new HashMap();
-        categoryMap.put(0, "正常");
-        categoryMap.put(1, "驳回");
-        map.put("status", statusMap);
         return RestResponse.ok(map);
     }
 

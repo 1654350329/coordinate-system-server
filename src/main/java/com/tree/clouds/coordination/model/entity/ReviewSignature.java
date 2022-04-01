@@ -36,7 +36,7 @@ public class ReviewSignature extends BaseEntity {
     @TableId(value = REVIEW_AND_SIGNATURE_ID, type = IdType.UUID)
     private String reviewAndSignatureId;
 
-    @ApiModelProperty(value = "文书编号")
+    @ApiModelProperty(value = "行文编号")
     @TableField(WRITING_BATCH_ID)
     private String writingBatchId;
 

@@ -19,6 +19,7 @@
             <artifactId>aspose-words</artifactId>
             <version>16.8.0</version>
         </dependency>
+        <!--七牛云图片-->
         <dependency>
             <groupId>com.qiniu</groupId>
             <artifactId>qiniu-java-sdk</artifactId>
@@ -48,6 +49,8 @@
             <version>0.1.6</version>
             <scope>compile</scope>
         </dependency>
+
+
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>

@@ -46,7 +46,7 @@ public class AppraisalReview extends BaseEntity implements Serializable {
     @TableField("appraise_number")
     private String appraiseNumber;
 
-    @ApiModelProperty(value = "主键")
+    @ApiModelProperty(value = "上报主键")
     @TableField(value = REPORT_ID)
     private String reportId;
 
