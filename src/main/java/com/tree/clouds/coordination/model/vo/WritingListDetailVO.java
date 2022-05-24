@@ -14,7 +14,7 @@ public class WritingListDetailVO {
     @ApiModelProperty(value = "时间")
     private String time;
     @ApiModelProperty(value = "审批人")
-    private String reviewSignatureUser;
+    private String examineUser;
 
     @ApiModelProperty(value = "复核人")
     private String appraisalReviewUser;

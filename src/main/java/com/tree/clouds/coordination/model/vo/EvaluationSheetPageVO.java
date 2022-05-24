@@ -32,7 +32,5 @@ public class EvaluationSheetPageVO extends PageParam {
     @ApiModelProperty(value = "发布状态 0未发布 1已发布")
     private Integer releaseStatus;
 
-    @ApiModelProperty(value = "任务类型")
-    private String taskType;
 
 }

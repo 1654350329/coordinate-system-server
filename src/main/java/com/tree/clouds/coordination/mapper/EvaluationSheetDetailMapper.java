@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.tree.clouds.coordination.model.entity.EvaluationSheetDetail;
 import com.tree.clouds.coordination.model.vo.ExpertDetailVO;
 import com.tree.clouds.coordination.model.vo.WritingBatchVO;
+import io.lettuce.core.dynamic.annotation.Param;
 
 import java.util.List;
 
@@ -72,5 +73,5 @@ public interface EvaluationSheetDetailMapper extends BaseMapper<EvaluationSheetD
         return this.selectOne(queryWrapper);
     }
 
-    IPage<ExpertDetailVO> expertDetailPage(IPage<WritingBatchVO> page, WritingBatchVO writingBatchVO);
+    IPage<ExpertDetailVO> expertDetailPage(IPage<WritingBatchVO> page, @Param("writingBatchVO") WritingBatchVO writingBatchVO);
 }

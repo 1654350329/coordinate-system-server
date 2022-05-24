@@ -74,20 +74,20 @@ public class WritingListServiceImpl implements WritingListService {
 
         List<String> appraisalReviewUsers = new ArrayList<>();
         List<String> examineUsers = new ArrayList<>();
-        List<String> reviewUsers = new ArrayList<>();
+        List<String> reportUsers = new ArrayList<>();
         List<writingListUserVO> writingListUserVOS = evaluationSheetService.getUserId(writingBatchId);
         for (writingListUserVO writingListUserVO : writingListUserVOS) {
             appraisalReviewUsers.add(writingListUserVO.getAppraisalReviewUserTwo());
             examineUsers.add(writingListUserVO.getExamineUser());
-            reviewUsers.add(writingListUserVO.getReviewUser());
+            reportUsers.add(writingListUserVO.getReportUser());
         }
 
         String appraisalReviewUser = userManageService.listByIds(appraisalReviewUsers).stream().map(UserManage::getUserName).collect(Collectors.joining(" "));
         String examineUser = userManageService.listByIds(examineUsers).stream().map(UserManage::getUserName).collect(Collectors.joining(" "));
-        String reviewUser = userManageService.listByIds(reviewUsers).stream().map(UserManage::getUserName).collect(Collectors.joining(" "));
-        writingListDetailVO.setReviewSignatureUser(appraisalReviewUser);
-        writingListDetailVO.setDataReportUser(examineUser);
-        writingListDetailVO.setAppraisalReviewUser(reviewUser);
+        String reportUser = userManageService.listByIds(reportUsers).stream().map(UserManage::getUserName).collect(Collectors.joining(" "));
+        writingListDetailVO.setExamineUser(examineUser);
+        writingListDetailVO.setDataReportUser(reportUser);
+        writingListDetailVO.setAppraisalReviewUser(appraisalReviewUser);
         return writingListDetailVO;
     }
 
@@ -107,7 +107,7 @@ public class WritingListServiceImpl implements WritingListService {
             Map<String, Object> head = new HashMap<>();
             head.put("ctime", time);
             head.put("time", writingListDetailVO.getTime());
-            head.put("reviewSignatureUser", writingListDetailVO.getReviewSignatureUser());
+            head.put("examineUser", writingListDetailVO.getExamineUser());
             head.put("appraisalReviewUser", writingListDetailVO.getAppraisalReviewUser());
             head.put("dataReportUser", writingListDetailVO.getDataReportUser());
             List<Map<String, Object>> dates = new ArrayList<>();

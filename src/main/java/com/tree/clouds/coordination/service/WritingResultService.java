@@ -7,7 +7,7 @@ import com.tree.clouds.coordination.model.vo.WritingResultPageVO;
 public interface WritingResultService {
     IPage<WritingResultBO> writingResultPage(WritingResultPageVO writingResultPageVO);
 
-    void writingBuild(String writingBatchId);
+    void writingBuild(String reportId);
 
     String getWritingFile(String id);
 }

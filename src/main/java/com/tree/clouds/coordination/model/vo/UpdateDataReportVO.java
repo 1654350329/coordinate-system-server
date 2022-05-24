@@ -14,12 +14,8 @@ public class UpdateDataReportVO {
     @ApiModelProperty(value = "主键")
     private String reportId;
 
-    @ApiModelProperty(value = "任务类型")
-    @NotBlank(message = "任务类型不能为空")
-    private String taskType;
-
     @ApiModelProperty(value = "认定工伤决定书编号")
-    @NotBlank(message = "认定工伤决定书编号不能为空")
+//    @NotBlank(message = "认定工伤决定书编号不能为空")
     private String identifiedNumber;
 
     @ApiModelProperty(value = "认定对象名称")

@@ -15,8 +15,6 @@ public class MessageInfoPage extends PageParam {
     @ApiModelProperty(value = "联系方式")
     private String phoneNumber;
 
-    @ApiModelProperty(value = "任务类型")
-    private String taskType;
 
     @ApiModelProperty(value = "性别")
     private String sex;

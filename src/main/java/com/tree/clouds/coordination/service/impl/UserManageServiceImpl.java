@@ -181,8 +181,6 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
         String password = bCryptPasswordEncoder.encode(Base64.decodeStr(userManage.getPassword()));
         userManage.setPassword(password);
         this.save(userManage);
-        //添加分组
-        groupUserService.saveGroupUser(userManage.getUserId(), userManageBO.getGroupId());
         //绑定角色
         roleUserService.addRole(userManageBO.getRoleIds(), userManage.getUserId());
 

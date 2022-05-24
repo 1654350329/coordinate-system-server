@@ -27,6 +27,5 @@ public class AppraisePageVO extends PageParam {
     @ApiModelProperty(value = "性别")
     private String sex;
 
-    @ApiModelProperty(value = "任务类型")
-    private String taskType;
+
 }

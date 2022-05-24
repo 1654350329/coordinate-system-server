@@ -43,7 +43,7 @@ public class UserManage extends BaseEntity {
     public static final String RECEIVE_NOTICE_STATUS = "RECEIVE_NOTICE_STATUS";
     public static final String ACCOUNT_STATUS = "ACCOUNT_STATUS";
     public static final String REMARK = "REMARK";
-    private static final long serialVersionUID = 1L;
+    public static final String AREA_NAME = "area_name";
     @ExcelIgnore
     @ApiModelProperty(value = "主键")
     @TableId(value = USER_ID, type = IdType.UUID)
@@ -63,7 +63,7 @@ public class UserManage extends BaseEntity {
 
     @ApiModelProperty(value = "科别")
     @ExcelProperty("科别")
-    @TableField("CATEGORY")
+//    @TableField("CATEGORY")
     private String category;
 
     @ExcelProperty("工作单位")
@@ -71,6 +71,11 @@ public class UserManage extends BaseEntity {
     @NotBlank(message = "工作单位不能为空")
     @TableField(UNIT)
     private String unit;
+    @ExcelProperty("所属地区")
+    @ApiModelProperty(value = "所属地区")
+    @NotBlank(message = "所属地区不能为空")
+    @TableField(AREA_NAME)
+    private String areaName;
 
     @ExcelProperty(value = "性别")
     @ApiModelProperty(value = "性别 中文 男 女")
@@ -80,13 +85,13 @@ public class UserManage extends BaseEntity {
 
     @ExcelProperty("职务")
     @ApiModelProperty(value = "职务")
-    @NotBlank(message = "职务不能为空")
+//    @NotBlank(message = "职务不能为空")
     @TableField(JOB)
     private String job;
 
     @ExcelProperty("职称")
     @ApiModelProperty(value = "职称")
-    @NotBlank(message = "职称不能为空")
+//    @NotBlank(message = "职称不能为空")
     @TableField(TITLE_GRADE)
     private String titleGrade;
 
@@ -110,15 +115,15 @@ public class UserManage extends BaseEntity {
 
     @ExcelProperty("是否收取通知")
     @ApiModelProperty(value = "是否收取通知 0否 1是")
-    @NotNull(message = "是否收取通知不能为空")
+//    @NotNull(message = "是否收取通知不能为空")
     @TableField(RECEIVE_NOTICE_STATUS)
-    private int receiveNoticeStatus;
+    private Integer receiveNoticeStatus;
 
     @ExcelProperty("账号状态")
     @ApiModelProperty(value = "账号状态 0可用 1不可用")
     @NotNull(message = "账号状态不能为空")
     @TableField(ACCOUNT_STATUS)
-    private int accountStatus;
+    private Integer accountStatus;
 
     @ExcelProperty("备注")
     @ApiModelProperty(value = "备注")

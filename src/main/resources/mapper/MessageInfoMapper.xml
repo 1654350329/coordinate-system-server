@@ -37,9 +37,7 @@
         <if test="messageInfoPage.phoneNumber != null and messageInfoPage.phoneNumber != ''">
             and b.phone_number = #{messageInfoPage.phoneNumber}
         </if>
-        <if test="messageInfoPage.taskType != null and messageInfoPage.taskType != ''">
-            and b.task_type = #{messageInfoPage.taskType}
-        </if>
+
         <if test="messageInfoPage.sex != null and messageInfoPage.sex != ''">
             and b.sex = #{messageInfoPage.sex}
         </if>

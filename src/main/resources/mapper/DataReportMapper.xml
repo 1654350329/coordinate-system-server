@@ -29,9 +29,8 @@
         PHONE_NUMBER, ADDRESS, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="selectDataReport" resultType="com.tree.clouds.coordination.model.bo.DataReportBO">
-        select a.* ,c.FILE_PATH as REVIEW_AND_SIGNATURE_ID from data_report a
-        left join review_signature b on a.report_id=b.report_id
-        left join file_info c on b.REVIEW_AND_SIGNATURE_ID=c.biz_id
+        select a.* ,b.APPRAISE_NUMBER from data_report a
+        left join appraisal_review b on a.report_id=b.report_id
         where 1=1 and a.del=0
         <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
             and a.IDENTIFIED_name like "%"#{dataReportPageVO.identifiedName}"%"
@@ -51,9 +50,7 @@
         <if test="dataReportPageVO.sickTimeDnd != null and dataReportPageVO.sickTimeDnd != ''">
             and a.SICK_TIME &lt;= #{dataReportPageVO.sickTimeDnd}
         </if>
-        <if test="dataReportPageVO.taskType != null and dataReportPageVO.taskType != ''">
-            and a.TASK_TYPE=#{dataReportPageVO.taskType}
-        </if>
+
         <if test="dataReportPageVO.examineStatus != null and dataReportPageVO.examineStatus != ''">
             and a.EXAMINE_STATUS =#{dataReportPageVO.examineStatus}
         </if>

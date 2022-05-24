@@ -43,7 +43,7 @@ public class DataReport extends BaseEntity {
     public static final String EXAMINE_DESCRIBE = "EXAMINE_DESCRIBE";
     public static final String EXAMINE_TIME = "EXAMINE_TIME";
     public static final String EXAMINE_USER = "EXAMINE_USER";
-    //审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签 7送达 8待鉴定
+    //审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 //6生成结论书 7送达 8待鉴定
     public static final int EXAMINE_PROGRESS_ZERO = 0;
     public static final int EXAMINE_PROGRESS_ONE = 1;
     public static final int EXAMINE_PROGRESS_TWO = 2;
@@ -57,10 +57,6 @@ public class DataReport extends BaseEntity {
     @ApiModelProperty(value = "主键")
     @TableId(value = REPORT_ID, type = IdType.UUID)
     private String reportId;
-
-    @ApiModelProperty(value = "任务类型")
-    @TableField(TASK_TYPE)
-    private String taskType;
 
     @ApiModelProperty(value = "认定工伤决定书编号")
     @TableField(IDENTIFIED_NUMBER)

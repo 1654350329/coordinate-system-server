@@ -33,7 +33,7 @@ public interface AppraiseService extends IService<Appraise> {
      * @param data
      * @return
      */
-    Integer getAppraiseNumber(String data, String type);
+    Integer getAppraiseNumber(String data);
 
     Appraise getByReportId(String reportId);
 
@@ -42,4 +42,6 @@ public interface AppraiseService extends IService<Appraise> {
     AppraiseInfoVO appraiseInfoVO(String reportId);
 
     void saveAppraise(List<String> reportIds, String writingBatchId);
+
+    AppraiseVO getAppraise(String id);
 }

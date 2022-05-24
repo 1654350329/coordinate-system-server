@@ -27,9 +27,8 @@
         , WRITING_BATCH_ID, YEAR, MONTH, CYCLE_TIME, EVALUATION_NUMBER, EVALUATION_STATUS, EXPERT_NUMBER, ALTERNATIVE_EXPERT_NUMBER, DRAW_TIME, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="writingBatch" resultType="java.lang.String">
-      select DISTINCT a.WRITING_BATCH_ID from evaluation_sheet a
-        left join review_signature b on a.WRITING_BATCH_ID=b.WRITING_BATCH_ID
-        where b.REVIEW_status='0' OR b.REVIEW_status is null
+         select WRITING_BATCH_ID from evaluation_sheet a
+        where complete_status=0
     </select>
     <select id="getNumber" resultType="java.lang.String">
         select number
@@ -92,10 +91,10 @@
 
     </select>
     <select id="getUserId" resultType="com.tree.clouds.coordination.model.vo.writingListUserVO">
-        select DISTINCT  c.examine_user,d.REVIEW_USER,e.APPRAISAL_REVIEW_USER_TWO from evaluation_sheet a
+        select DISTINCT  c.examine_user,d.CREATED_USER as reportUser,e.APPRAISAL_REVIEW_USER_TWO from evaluation_sheet a
             LEFT JOIN writing_batch b on a.WRITING_BATCH_ID=b.WRITING_BATCH_ID
             LEFT JOIN data_examine c on b.report_ID=c.report_id
-            left JOIN review_signature d ON c.report_ID=d.report_id
+            left JOIN data_report d ON c.report_ID=d.report_id
             left JOIN appraisal_review e ON c.report_ID=e.report_id
             where a.WRITING_BATCH_ID=#{writingBatchId}
     </select>

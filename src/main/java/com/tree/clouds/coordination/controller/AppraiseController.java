@@ -54,6 +54,15 @@ public class AppraiseController {
         return RestResponse.ok(true);
     }
 
+    @Log("鉴定信息")
+    @PostMapping("/getAppraise")
+    @ApiOperation(value = "获取鉴定信息")
+//    @PreAuthorize("hasAuthority('appraise:appraise:add')")
+    public RestResponse<AppraiseVO> getAppraise(@Validated @RequestBody PublicIdReqVO publicIdReqVO) {
+        AppraiseVO appraiseVO = appraiseService.getAppraise(publicIdReqVO.getId());
+        return RestResponse.ok(appraiseVO);
+    }
+
     @Log("鉴定意见")
     @PostMapping("/AppraiseInfoVO")
     @ApiOperation(value = "鉴定意见 id为 reportId")

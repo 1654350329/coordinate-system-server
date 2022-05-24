@@ -23,8 +23,6 @@ public class DataReportPageVO extends PageParam {
     @ApiModelProperty(value = "伤残病结束时间")
     private String sickTimeDnd;
 
-    @ApiModelProperty(value = "任务类型")
-    private String taskType;
 
     @ApiModelProperty(value = "审核进度 0初始 1上报 2初审 3鉴定 4鉴定复核一 5鉴定复核二 6认定审签 7送达 8待鉴定")
     private Integer examineProgress;

@@ -19,5 +19,5 @@ public interface MessageInfoMapper extends BaseMapper<MessageInfo> {
 
     IPage<MessageInfoBO> messageInfoPage(IPage<MessageInfoBO> page, @Param("messageInfoPage") MessageInfoPage messageInfoPage);
 
-    String getWritingFile(String reportId);
+    String getWritingFile(@Param("reportId") String reportId);
 }

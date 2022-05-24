@@ -2,6 +2,7 @@ package com.tree.clouds.coordination.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tree.clouds.coordination.model.entity.SysMenu;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -15,5 +16,5 @@ import java.util.List;
  */
 public interface SysMenuMapper extends BaseMapper<SysMenu> {
 
-    List<String> getMenuIdByRoleId(String roleId);
+    List<String> getMenuIdByRoleId(@Param("roleId") String roleId);
 }

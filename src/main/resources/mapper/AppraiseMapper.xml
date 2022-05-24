@@ -47,15 +47,12 @@
         <if test="appraisePageVO.sex != null and appraisePageVO.sex !=''">
             and b.sex=#{appraisePageVO.sex}
         </if>
-        <if test="appraisePageVO.taskType != null and appraisePageVO.taskType !=''">
-            and b.task_Type=#{appraisePageVO.taskType}
-        </if>
+
     </select>
-    <select id="getAppraiseNumber" resultType="java.lang.String">
-        select APPRAISE_NUMBER
+    <select id="getAppraiseNumber" resultType="java.lang.Integer">
+        select Count(*)
         from appraise
-        where CREATED_TIME like #{time}'%' and WRITING_BATCH_ID like '%'#{type}'%'
-        ORDER BY CREATED_TIME DESC limit 1
+        where CREATED_TIME like #{time}"%"
     </select>
     <select id="expertGroupInfo" resultType="com.tree.clouds.coordination.model.vo.ExpertGroupInfo">
    select d.*,c.GROUP_LEADER from appraise a

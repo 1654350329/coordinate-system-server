@@ -17,9 +17,7 @@
     </resultMap>
 
     <!-- 通用查询结果列 -->
-    <sql id="Base_Column_List">
-        Data_examine_ID, data_report_id, examine_status, examine_describe, examine_time, examine_user, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME
-    </sql>
+
     <select id="dataExaminePage" resultType="com.tree.clouds.coordination.model.bo.DataExamineBo">
         select DISTINCT a.Data_examine_ID,a.examine_time,c.user_name as examine_user, b.*
         from data_examine a
@@ -45,9 +43,7 @@
         <if test="dataReportPageVO.sickTimeDnd != null and dataReportPageVO.sickTimeDnd != ''">
             and b.SICK_TIME &lt;= #{dataReportPageVO.sickTimeDnd}
         </if>
-        <if test="dataReportPageVO.taskType != null and dataReportPageVO.taskType != ''">
-            and b.TASK_TYPE=#{dataReportPageVO.taskType}
-        </if>
+
         <if test="dataReportPageVO.examineStatus != null and dataReportPageVO.examineStatus != 2">
             and a.EXAMINE_STATUS =#{dataReportPageVO.examineStatus}
         </if>

@@ -1,8 +1,8 @@
 server:
   port: 8888
   maxHttpHeaderSize: 102400
-  #  servlet:
-  #    context-path: /coordination
+  servlet:
+    context-path: /api
   error:
     include-exception: true
     include-message: always
@@ -28,9 +28,12 @@ spring:
     time-zone: GMT+8
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/coordination_system?useUnicode=true&useSSL=true
+    url: jdbc:mysql://localhost:3306/coordination_system?useUnicode=true&useSSL=true&useUnicode=true&characterEncoding=UTF-8
     username: root
     password: 123456
+#    username: coordination
+#    password: root
+
 #    password: root
 # mybatis-plus 配置
 mybatis-plus:

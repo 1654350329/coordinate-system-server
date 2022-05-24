@@ -29,16 +29,10 @@
         USER_ID, USER_NAME, PHONE_NUMBER, UNIT, SEX, JOB, TITLE_GRADE, ACCOUNT, PASSWORD, WECHAT_AUTHORIZATION, RECEIVE_NOTICE_STATUS, ACCOUNT_STATUS, REMARK, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="userManagePage" resultType="com.tree.clouds.coordination.model.bo.UserManageBO">
-        select a.*,b.group_id from user_manage a
-        left join group_user b on a.user_id=b.user_id
-        <if test="userManagePageVO.roleName != null and userManagePageVO.roleName != ''">
-            left join role_user c on a.user_id=c.user_id
-            left join role_manage d on c.role_id=d.role_id
-        </if>
+        select a.* from user_manage a
+        left join role_user c on a.user_id=c.user_id
+        left join role_manage d on c.role_id=d.role_id
         where 1=1 and a.del=0
-        <if test="userManagePageVO.groupId != null and userManagePageVO.groupId != ''">
-            and b.group_id =#{userManagePageVO.groupId}
-        </if>
         <if test="userManagePageVO.account != null and userManagePageVO.account != ''">
             and a.account like "%"#{userManagePageVO.account}"%"
         </if>
@@ -46,7 +40,7 @@
             and a.user_name like "%"#{userManagePageVO.userName}"%"
         </if>
         <if test="userManagePageVO.roleName != null and userManagePageVO.roleName != ''">
-            and d.role_name like "%"#{userManagePageVO.roleName}"%"
+            and d.role_name = #{userManagePageVO.roleName}
         </if>
 
     </select>

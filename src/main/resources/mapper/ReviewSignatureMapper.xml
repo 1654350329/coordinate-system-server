@@ -43,9 +43,7 @@
         <if test="reviewPageVO.phoneNumber != null and reviewPageVO.phoneNumber !=''">
             and b.phone_number=#{reviewPageVO.phoneNumber}
         </if>
-        <if test="reviewPageVO.taskType != null and reviewPageVO.taskType !=''">
-            and b.task_type=#{reviewPageVO.taskType}
-        </if>
+
         <if test="reviewPageVO.sex != null and reviewPageVO.sex !=''">
             and b.sex=#{reviewPageVO.sex}
         </if>
@@ -57,12 +55,13 @@
         </if>
     </select>
     <select id="writingResultPage" resultType="com.tree.clouds.coordination.model.bo.WritingResultBO">
-        select b.*,d.file_path as fileId ,a.REVIEW_AND_SIGNATURE_ID, a.WRITING_BATCH_ID, a.APPRAISE_NUMBER,a.REVIEW_TIME
-        from review_signature a
+        select b.*,d.file_path as fileId , a.WRITING_BATCH_ID, a.APPRAISE_NUMBER,a.APPRAISAL_REVIEW_TIME_TWO as
+        reviewTime
+        from appraisal_review a
         left Join data_report b on a.report_ID = b.report_ID
         left Join message_info c on a.report_ID = c.report_ID
         left Join file_info d on d.biz_id = c.message_id
-        where a.review_result = 1
+        where b.EXAMINE_PROGRESS >= 6 and d.file_path is not null
         <if test="writingResultPageVO.writingBatchId != null and writingResultPageVO.writingBatchId != ''">
             and a.writing_batch_Id = #{writingResultPageVO.writingBatchId}
         </if>
@@ -78,9 +77,7 @@
         <if test="writingResultPageVO.phoneNumber != null and writingResultPageVO.phoneNumber != ''">
             and b.phone_number = #{writingResultPageVO.phoneNumber}
         </if>
-        <if test="writingResultPageVO.taskType != null and writingResultPageVO.taskType != ''">
-            and b.task_type = #{writingResultPageVO.taskType}
-        </if>
+
         <if test="writingResultPageVO.resultFile != null and writingResultPageVO.resultFile != ''">
             and a.result_file = #{writingResultPageVO.resultFile}
         </if>

@@ -20,8 +20,6 @@ public class WritingResultPageVO extends PageParam {
     @ApiModelProperty(value = "联系方式")
     private String phoneNumber;
 
-    @ApiModelProperty(value = "任务类型")
-    private String taskType;
 
     @ApiModelProperty(value = "结论书状态是否存在")
     private String resultFile;

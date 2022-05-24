@@ -19,8 +19,8 @@ import java.util.UUID;
 public class Word2PdfUtil {
 
     public static void main(String[] args) {
-        //Word2PdfUtil.doc2("D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.docx", "D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.pdf", 40);
-        Word2PdfUtil.doc2Img("D:\\workhome\\server2\\coordination-system-server\\file\\通知书202112工-1.docx", "D:\\");
+        Word2PdfUtil.doc2("D:\\南劳鉴病字［2022］第0001号结论书.docx", "D:\\0001号结论书.pdf", SaveFormat.PDF);
+//        Word2PdfUtil.doc2Img("D:\\南劳鉴病字［2022］第0001号结论书.docx", "D:\\");
     }
 
     public static boolean getLicense() {
@@ -46,6 +46,7 @@ public class Word2PdfUtil {
             FileOutputStream os = new FileOutputStream(file);
             Document doc = new Document(inPath); // Address是将要被转化的word文档
             doc.save(os, type);// 全面支持DOC, DOCX, OOXML, RTF HTML, OpenDocument, PDF,
+            os.close();
             // EPUB, XPS, SWF 相互转换
             long now = System.currentTimeMillis();
             System.out.println("Word转换成功，共耗时：" + ((now - old) / 1000.0) + "秒"); // 转化用时
@@ -66,15 +67,14 @@ public class Word2PdfUtil {
             if (!getLicense()) {
                 throw new Exception("com.aspose.words lic ERROR!");
             }
-            long old = System.currentTimeMillis();
             // word文档
             Document doc = new Document(inPath);
             // 支持RTF HTML,OpenDocument, PDF,EPUB, XPS转换
-            ImageSaveOptions options = new ImageSaveOptions(SaveFormat.PNG);
+            ImageSaveOptions options = new ImageSaveOptions(SaveFormat.JPEG);
             int pageCount = doc.getPageCount();
 
             for (int i = 0; i < pageCount; i++) {
-                filePath = outDir + "/" + UUID.randomUUID() + ".png";
+                filePath = outDir + "/" + UUID.randomUUID() + ".jpeg";
                 File file = new File(filePath);
                 FileOutputStream os = new FileOutputStream(file);
                 options.setPageIndex(i);

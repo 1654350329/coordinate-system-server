@@ -6,19 +6,19 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.AppraisalReviewMapper;
 import com.tree.clouds.coordination.model.bo.AppraisalReviewBO;
 import com.tree.clouds.coordination.model.entity.AppraisalReview;
+import com.tree.clouds.coordination.model.entity.Appraise;
 import com.tree.clouds.coordination.model.entity.DataReport;
-import com.tree.clouds.coordination.model.entity.ReviewSignature;
 import com.tree.clouds.coordination.model.vo.AppraisalReviewPageVO;
 import com.tree.clouds.coordination.model.vo.AppraisalReviewVO;
-import com.tree.clouds.coordination.service.AppraisalReviewService;
-import com.tree.clouds.coordination.service.DataReportService;
-import com.tree.clouds.coordination.service.ReviewSignatureService;
+import com.tree.clouds.coordination.service.*;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import com.tree.clouds.coordination.utils.LoginUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * <p>
@@ -34,7 +34,13 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
     @Autowired
     private DataReportService dataReportService;
     @Autowired
-    private ReviewSignatureService reviewSignatureService;
+    private EvaluationSheetService evaluationSheetService;
+    @Autowired
+    private AppraiseService appraiseService;
+    @Autowired
+    private WritingResultService writingResultService;
+    @Autowired
+    private WritingBatchService writingBatchService;
 
     @Override
     public IPage<AppraisalReviewBO> appraisalReviewPage(AppraisalReviewPageVO appraisePageVO) {
@@ -44,6 +50,7 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
     }
 
     @Override
+    @Transactional
     public Boolean addAppraisalReview(AppraisalReviewVO appraisalReviewVO) {
         AppraisalReview review = this.getById(appraisalReviewVO.getAppraiseResultId());
         if (review.getAppraisalReviewStatus().equals(2) || (review.getAppraisalReviewResult() != null && review.getAppraisalReviewResult() == 0)) {
@@ -72,13 +79,16 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
                 appraisalReview.setAppraisalReviewUserTwo(LoginUserUtil.getUserId());
                 appraisalReview.setRemarkTwo(appraisalReviewVO.getRemark());
                 this.updateById(appraisalReview);
-                //添加到审签
-                ReviewSignature reviewSignature = new ReviewSignature();
-                reviewSignature.setWritingBatchId(review.getWritingBatchId());
-                reviewSignature.setReportId(review.getReportId());
-                reviewSignature.setAppraiseNumber(review.getAppraiseNumber());
-                reviewSignature.setReviewStatus(0);
-                reviewSignatureService.save(reviewSignature);
+                //二核为自动审签
+                dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_SIX, null);
+                if (evaluationSheetService.isCompleteStatus(review.getWritingBatchId())) {
+                    evaluationSheetService.updateCompleteStatus(review.getWritingBatchId());
+                    //自动生成结论书
+                    List<String> list = writingBatchService.getReportByWritingBatchId(review.getWritingBatchId());
+                    for (String report : list) {
+                        writingResultService.writingBuild(report);
+                    }
+                }
             }
         } else if (appraisalReviewVO.getAppraisalReviewResult() == 0) {
             //一核驳回
@@ -97,8 +107,18 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
                 appraisalReview.setAppraisalReviewUserTwo(LoginUserUtil.getUserId());
                 appraisalReview.setRemarkTwo(appraisalReviewVO.getRemark());
             }
-            //反驳打回初审状态
-            this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, appraisalReviewVO.getRemark());
+            if (appraisalReviewVO.getReturnPosition() == 0) {
+                //反驳打回初审状态
+                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, appraisalReviewVO.getRemark());
+            } else {
+                //反驳打回专家鉴定状态
+                this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_TWO, appraisalReviewVO.getRemark());
+                //修改专家鉴定状态
+                Appraise appraise = new Appraise();
+                appraise.setAppraiseStatus(2);
+                this.appraiseService.update(appraise, new QueryWrapper<Appraise>().eq(Appraise.REPORT_ID, review.getReportId()));
+            }
+
             appraisalReview.setAppraisalReviewResult(0);
 
             this.updateById(appraisalReview);

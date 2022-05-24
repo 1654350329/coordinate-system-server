@@ -39,9 +39,7 @@
         <if test="appraisalReviewPageVO.phoneNumber != null and appraisalReviewPageVO.phoneNumber !=''">
             and b.phone_number=#{appraisalReviewPageVO.phoneNumber}
         </if>
-        <if test="appraisalReviewPageVO.taskType != null and appraisalReviewPageVO.taskType !=''">
-            and b.task_type=#{appraisalReviewPageVO.taskType}
-        </if>
+
         <if test="appraisalReviewPageVO.sex != null and appraisalReviewPageVO.sex !=''">
             and b.sex=#{appraisalReviewPageVO.sex}
         </if>

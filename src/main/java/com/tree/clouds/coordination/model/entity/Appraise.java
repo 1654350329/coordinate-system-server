@@ -30,7 +30,7 @@ public class Appraise extends BaseEntity {
     public static final String APPRAISE_TIME = "APPRAISE_TIME";
     public static final String APPRAISE_STATUS = "APPRAISE_STATUS";
     public static final String APPRAISE_GRADE = "APPRAISE_GRADE";
-    public static final String GRADING_PRINCIPLE = "GRADING_PRINCIPLE";
+    public static final String APPRAISE_PRINCIPLE = "APPRAISE_PRINCIPLE";
     public static final String APPRAISE_RESULT = "APPRAISE_RESULT";
     public static final String REPORT_ID = "REPORT_ID";
     private static final long serialVersionUID = 1L;
@@ -50,7 +50,7 @@ public class Appraise extends BaseEntity {
     @TableField(value = REPORT_ID)
     private String reportId;
 
-    @ApiModelProperty(value = "鉴定状态 0未鉴定 1已鉴定")
+    @ApiModelProperty(value = "鉴定状态 0未鉴定 1已鉴定 2驳回")
     @TableField(APPRAISE_STATUS)
     private Integer appraiseStatus;
 
@@ -58,13 +58,13 @@ public class Appraise extends BaseEntity {
     @TableField("APPRAISE_TIME")
     private String appraiseTime;
 
-    @ApiModelProperty(value = "等级")
+    @ApiModelProperty(value = "鉴定标准")
     @TableField("APPRAISE_GRADE")
     private String appraiseGrade;
 
     @ApiModelProperty(value = "等级原则")
-    @TableField("GRADING_PRINCIPLE")
-    private String gradingPrinciple;
+    @TableField("APPRAISE_PRINCIPLE")
+    private String appraisePrinciple;
 
     @ApiModelProperty(value = "最终等级(结论)")
     @TableField("APPRAISE_RESULT")

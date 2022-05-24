@@ -2,6 +2,7 @@ package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,11 +14,12 @@ import com.tree.clouds.coordination.service.*;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.Transient;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,10 +64,6 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
         }
         //修改审核进度为到复核一
         dataReportService.updateDataExamine(Collections.singletonList(appraise.getReportId()), DataReport.EXAMINE_PROGRESS_THREE, null);
-        DataReport report = new DataReport();
-        report.setReportId(appraise.getReportId());
-        report.setSickCondition(appraiseVO.getSickCondition());
-        dataReportService.updateById(report);
         //更新鉴定状态
         Appraise app = BeanUtil.toBean(appraiseVO, Appraise.class);
         app.setAppraiseStatus(1);
@@ -74,11 +72,14 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
         //添加到鉴定复合表
         AppraisalReview appraisalReview = new AppraisalReview();
         appraisalReview.setAppraisalReviewStatus(0);
+        //未鉴定
+        appraisalReview.setAppraisalReviewResult(2);
         appraisalReview.setWritingBatchId(appraise.getWritingBatchId());
         appraisalReview.setAppraiseNumber(appraise.getAppraiseNumber());
         appraisalReview.setReportId(appraise.getReportId());
-        appraisalReviewService.save(appraisalReview);
+        appraisalReviewService.saveOrUpdate(appraisalReview, new QueryWrapper<AppraisalReview>().eq(AppraisalReview.REPORT_ID, appraise.getReportId()));
         //保存文件信息
+        fileInfoService.deleteByBizId(appraise.getAppraiseId());
         appraiseVO.getFileInfoVO().forEach(fileInfoVO -> fileInfoVO.setType("3"));
         fileInfoService.saveFileInfo(appraiseVO.getFileInfoVO(), appraise.getAppraiseId());
     }
@@ -91,12 +92,12 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
     }
 
     @Override
-    public Integer getAppraiseNumber(String time, String type) {
-        String appraiseNumber = this.baseMapper.getAppraiseNumber(time, type);
+    public Integer getAppraiseNumber(String time) {
+        Integer appraiseNumber = this.baseMapper.getAppraiseNumber(time);
         if (appraiseNumber == null) {
             return 0;
         }
-        return Integer.parseInt(appraiseNumber) + 1;
+        return appraiseNumber;
     }
 
     @Override
@@ -183,14 +184,11 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
     }
 
     @Override
+    @Transactional
     public void saveAppraise(List<String> reportIds, String writingBatchId) {
         //生成认定编号
-        Calendar now = Calendar.getInstance();
-        String year = now.get(Calendar.YEAR) + "";
-        int month = now.get(Calendar.DAY_OF_MONTH);
-        String m = month < 10 ? "0" + month : String.valueOf(month);
-        String type = writingBatchId.contains("工") ? "工" : "病";
-        Integer appraiseNumber = appraiseService.getAppraiseNumber(year + "-" + m, type);
+        String year = String.valueOf(DateUtil.year(new Date()));
+        Integer appraiseNumber = appraiseService.getAppraiseNumber(year);
         //添加到鉴定信息表
         List<Appraise> appraises = new ArrayList<>();
         for (String reportId : reportIds) {
@@ -203,5 +201,17 @@ public class AppraiseServiceImpl extends ServiceImpl<AppraiseMapper, Appraise> i
             appraises.add(appraise);
         }
         this.saveBatch(appraises);
+    }
+
+    @Override
+    public AppraiseVO getAppraise(String id) {
+        Appraise appraise = this.getById(id);
+        AppraiseVO appraiseVO = BeanUtil.toBean(appraise, AppraiseVO.class);
+        List<FileInfo> fileInfos = fileInfoService.getByBizIdsAndType(appraise.getAppraiseId(), null);
+        List<FileInfoVO> fileInfoVOS = fileInfos.stream().map(fileInfo -> BeanUtil.toBean(fileInfo, FileInfoVO.class)).collect(Collectors.toList());
+        appraiseVO.setFileInfoVO(fileInfoVOS);
+        DataReport dataReport = dataReportService.getById(appraise.getReportId());
+        appraiseVO.setSickCondition(dataReport.getSickCondition());
+        return appraiseVO;
     }
 }

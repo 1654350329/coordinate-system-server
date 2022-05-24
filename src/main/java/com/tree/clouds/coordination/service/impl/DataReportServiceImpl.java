@@ -62,9 +62,9 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         if (updateDataReportVO.getSort() == 0 && updateDataReportVO.getBizFile().stream().noneMatch(fileInfoVO -> fileInfoVO.getType().equals("1"))) {
             throw new BaseBusinessException(400, "认定伤病残决定书未上传!");
         }
-        if (updateDataReportVO.getSort() == 1 && updateDataReportVO.getBizFile().stream().noneMatch(fileInfoVO -> fileInfoVO.getType().equals("2"))) {
-            throw new BaseBusinessException(400, "病例复印件未上传!");
-        }
+//        if (updateDataReportVO.getSort() == 1 && updateDataReportVO.getBizFile().stream().noneMatch(fileInfoVO -> fileInfoVO.getType().equals("2"))) {
+//            throw new BaseBusinessException(400, "病例复印件未上传!");
+//        }
         fileInfoService.saveFileInfo(updateDataReportVO.getBizFile(), dataReport.getReportId());
     }
 
@@ -94,7 +94,13 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
 
     public IPage<DataReportBO> dataReportPage(DataReportPageVO dataReportPageVO) {
         IPage<DataReportBO> page = dataReportPageVO.getPage();
-        return this.baseMapper.selectDataReport(page, dataReportPageVO);
+        IPage<DataReportBO> dataReportBOIPage = this.baseMapper.selectDataReport(page, dataReportPageVO);
+        dataReportBOIPage.getRecords().forEach(dataReportBO -> {
+            if (dataReportBO.getExamineProgress() < DataReport.EXAMINE_PROGRESS_SIX) {
+                dataReportBO.setAppraiseNumber(null);
+            }
+        });
+        return dataReportBOIPage;
     }
 
     @Override

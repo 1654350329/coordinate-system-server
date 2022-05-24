@@ -3,7 +3,6 @@ package com.tree.clouds.coordination.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,7 +14,10 @@ import com.tree.clouds.coordination.mapper.EvaluationSheetDetailMapper;
 import com.tree.clouds.coordination.mapper.EvaluationSheetMapper;
 import com.tree.clouds.coordination.model.bo.DataReportBO;
 import com.tree.clouds.coordination.model.bo.WritingListBO;
-import com.tree.clouds.coordination.model.entity.*;
+import com.tree.clouds.coordination.model.entity.DataReport;
+import com.tree.clouds.coordination.model.entity.EvaluationSheet;
+import com.tree.clouds.coordination.model.entity.EvaluationSheetDetail;
+import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.model.vo.*;
 import com.tree.clouds.coordination.service.*;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
@@ -156,52 +158,18 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     @Override
     @Transactional
     public void draw(DrawVO drawVO) {
-        //保存专家鉴定人数
-        EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(drawVO.getWritingBatchId());
-        if (evaluationSheet == null) {
-            throw new BaseBusinessException(500, "任务不存在!");
-        }
+        EvaluationSheet evaluationSheet = this.getByWritingBatchId(drawVO.getWritingBatchId());
         if (drawVO.getExpertType() == 1) {
-            if (evaluationSheet.getExpertNumber() != 0) {
-                throw new BaseBusinessException(500, "参评专家组已完成抽签!");
-            }
-            evaluationSheet.setExpertNumber(drawVO.getNumber());
-            //设置抽签第一轮状态
-            evaluationSheet.setDrawStatus(2);
+            evaluationSheet.setExpertNumber(drawVO.getUserIds().size());
+            evaluationSheet.setDrawStatus(1);
         } else {
-            if (evaluationSheet.getExpertNumber() == 0) {
-                throw new BaseBusinessException(500, "专家组还未完成抽签!");
-            }
-            if (evaluationSheet.getAlternativeExpertNumber() != 0) {
-                throw new BaseBusinessException(500, "候补专家组已完成抽签!");
-            }
-            evaluationSheet.setAlternativeExpertNumber(drawVO.getNumber());
-            //设置抽签完成时间
-            evaluationSheet.setDrawTime(DateUtil.format(new Date(), "YYYY-MM-dd"));
-            //设置抽签第二轮
+            evaluationSheet.setAlternativeExpertNumber(drawVO.getUserIds().size());
             evaluationSheet.setDrawStatus(2);
         }
-        this.baseMapper.updateById(evaluationSheet);
-
-        List<UserManage> userManages = roleManageService.getUserInfoByRole(RoleManage.ROLE_EXPERT);
-        List<EvaluationSheetDetail> details = this.evaluationSheetDetailMapper.getByEvaluationId(evaluationSheet.getEvaluationId());
-
-        if (drawVO.getExpertType() == 2) {
-            List<String> userIds = details.stream().filter(detail -> detail.getExpertType() == 1).map(EvaluationSheetDetail::getUserId).collect(Collectors.toList());
-            userManages.removeIf(userManage -> userIds.contains(userManage.getUserId()));
-        }
-        if (userManages.size() < drawVO.getNumber()) {
-            throw new BaseBusinessException(500, String.format("专家抽签人数必须小于专家总人数,专家总人数为:%s", userManages.size()));
-        }
-        //获取随机数
-        Set<Integer> randomIntSet = new HashSet<>();
-        while (randomIntSet.size() != drawVO.getNumber()) {
-            int randomInt = RandomUtil.randomInt(0, userManages.size());
-            randomIntSet.add(randomInt);
-        }
-        ArrayList<Integer> list = new ArrayList(randomIntSet);
-        for (Integer integer : list) {
-            UserManage userManage = userManages.get(integer);
+        evaluationSheet.setDrawTime(DateUtil.now());
+        this.updateById(evaluationSheet);
+        for (String userId : drawVO.getUserIds()) {
+            UserManage userManage = userManageService.getById(userId);
             EvaluationSheetDetail sheetDetail = new EvaluationSheetDetail();
             sheetDetail.setUserId(userManage.getUserId());
             sheetDetail.setExpertType(drawVO.getExpertType());
@@ -348,7 +316,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     public Boolean isCompleteStatus(String writingBatchId) {
         List<String> reportIds = writingBatchService.getReportByWritingBatchId(writingBatchId);
         List<DataReport> dataReports = dataReportService.listByIds(reportIds);
-        List<DataReport> collect = dataReports.stream().filter(dataReport -> dataReport.getExamineProgress() != DataReport.EXAMINE_PROGRESS_SEVEN).collect(Collectors.toList());
+        List<DataReport> collect = dataReports.stream().filter(dataReport -> dataReport.getExamineProgress() < DataReport.EXAMINE_PROGRESS_SIX).collect(Collectors.toList());
         return CollUtil.isEmpty(collect);
     }
 
