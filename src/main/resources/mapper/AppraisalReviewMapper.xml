@@ -18,14 +18,14 @@
             and a.WRITING_BATCH_ID like CONCAT('%',#{appraisalReviewPageVO.writingBatchId},'%')
         </if>
         <if test="appraisalReviewPageVO.appraiseNumber != null and appraisalReviewPageVO.appraiseNumber !=''">
-            and b.appraiseNumber=#{appraisalReviewPageVO.appraiseNumber}
+            and a.appraiseNumber=#{appraisalReviewPageVO.appraiseNumber}
         </if>
         <if test="appraisalReviewPageVO.appraisalReviewStatus != null and appraisalReviewPageVO.appraisalReviewStatus !=''">
-            and b.appraisal_Review_Status=#{appraisalReviewPageVO.appraisalReviewStatus}
+            and a.appraisal_Review_Status=#{appraisalReviewPageVO.appraisalReviewStatus}
         </if>
         <if test="appraisalReviewPageVO.reviewResult != null and appraisalReviewPageVO.reviewResult !=''">
-            and (b.APPRAISAL_REVIEW_RESULT_ONE=#{appraisalReviewPageVO.reviewResult} or
-            b.APPRAISAL_REVIEW_RESULT_TWO=#{appraisalReviewBO.reviewResult})
+            and (a.APPRAISAL_REVIEW_RESULT_ONE=#{appraisalReviewPageVO.reviewResult} or
+            a.APPRAISAL_REVIEW_RESULT_TWO=#{appraisalReviewBO.reviewResult})
         </if>
         <if test="appraisalReviewPageVO.identifiedName != null and appraisalReviewPageVO.identifiedName !=''">
             and b.identified_name like CONCAT('%',#{appraisalReviewPageVO.identifiedName},'%')

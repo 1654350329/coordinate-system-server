@@ -1,15 +1,21 @@
 package com.tree.clouds.coordination.utils;
 
 import com.aspose.words.Document;
-import com.aspose.words.ImageSaveOptions;
 import com.aspose.words.License;
 import com.aspose.words.SaveFormat;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.aspectj.weaver.ast.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
+
+import static com.tree.clouds.coordination.common.Constants.TMP_HOME;
 
 
 /**
@@ -17,10 +23,19 @@ import java.util.UUID;
  * @since 2018-09-27
  */
 public class Word2PdfUtil {
+    /**
+     * dpi越大转换后越清晰，相对转换速度越慢
+     */
+    private static final Integer DPI = 500;
+
+    /**
+     * 转换后的图片类型
+     */
+    private static final String IMG_TYPE = "png";
 
     public static void main(String[] args) {
-        Word2PdfUtil.doc2("D:\\南劳鉴病字［2022］第0001号结论书.docx", "D:\\0001号结论书.pdf", SaveFormat.PDF);
-//        Word2PdfUtil.doc2Img("D:\\南劳鉴病字［2022］第0001号结论书.docx", "D:\\");
+//        Word2PdfUtil.doc2("D:\\南劳鉴病字［2022］第0001号结论书.docx", "D:\\0001号结论书.pdf", SaveFormat.PDF);
+        Word2PdfUtil.doc2Img("D:\\南劳鉴病字［2022］第0001号结论书.docx", "D:\\");
     }
 
     public static boolean getLicense() {
@@ -62,29 +77,31 @@ public class Word2PdfUtil {
      * @param outDir 输出的图片文件夹地址
      */
     public static String doc2Img(String inPath, String outDir) {
-        String filePath = null;
+        String pdfPath = TMP_HOME + UUID.randomUUID() + ".pdf";
+        doc2(inPath, pdfPath, SaveFormat.PDF);
+        String path = outDir + UUID.randomUUID() + ".png";
         try {
-            if (!getLicense()) {
-                throw new Exception("com.aspose.words lic ERROR!");
-            }
-            // word文档
-            Document doc = new Document(inPath);
-            // 支持RTF HTML,OpenDocument, PDF,EPUB, XPS转换
-            ImageSaveOptions options = new ImageSaveOptions(SaveFormat.JPEG);
-            int pageCount = doc.getPageCount();
-
-            for (int i = 0; i < pageCount; i++) {
-                filePath = outDir + "/" + UUID.randomUUID() + ".jpeg";
-                File file = new File(filePath);
-                FileOutputStream os = new FileOutputStream(file);
-                options.setPageIndex(i);
-                doc.save(os, options);
-                os.close();
-            }
-
-        } catch (Exception e) {
+            pdfToImage(new File(pdfPath), path);
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return filePath;
+        return path;
+    }
+
+    /**
+     * PDF转图片
+     *
+     * @param file PDF文件的二进制流
+     * @return 图片文件的二进制流
+     */
+    public static void pdfToImage(File file, String outDir) throws IOException {
+        try (PDDocument document = PDDocument.load(file)) {
+            PDFRenderer renderer = new PDFRenderer(document);
+            for (int i = 0; i < document.getNumberOfPages(); ++i) {
+                BufferedImage bufferedImage = renderer.renderImageWithDPI(i, DPI);
+                ImageIO.write(bufferedImage, IMG_TYPE, new File(outDir));
+            }
+
+        }
     }
 }

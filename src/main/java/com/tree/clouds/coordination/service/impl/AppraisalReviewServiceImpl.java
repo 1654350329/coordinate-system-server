@@ -83,11 +83,12 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
                 dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_SIX, null);
                 if (evaluationSheetService.isCompleteStatus(review.getWritingBatchId())) {
                     evaluationSheetService.updateCompleteStatus(review.getWritingBatchId());
-                    //自动生成结论书
+                    //异步自动生成结论书
                     List<String> list = writingBatchService.getReportByWritingBatchId(review.getWritingBatchId());
                     for (String report : list) {
                         writingResultService.writingBuild(report);
                     }
+
                 }
             }
         } else if (appraisalReviewVO.getAppraisalReviewResult() == 0) {

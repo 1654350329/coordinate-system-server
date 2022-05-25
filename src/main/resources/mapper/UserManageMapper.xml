@@ -42,6 +42,9 @@
         <if test="userManagePageVO.roleName != null and userManagePageVO.roleName != ''">
             and d.role_name = #{userManagePageVO.roleName}
         </if>
+        <if test="userManagePageVO.roleId != null and userManagePageVO.roleId != ''">
+            and d.role_id = #{userManagePageVO.roleId}
+        </if>
 
     </select>
     <select id="listByMenuId" resultType="com.tree.clouds.coordination.model.entity.UserManage">

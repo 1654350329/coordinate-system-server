@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class WritingResultServiceImpl implements WritingResultService {
@@ -65,21 +66,24 @@ public class WritingResultServiceImpl implements WritingResultService {
             throw new BaseBusinessException(400, "已生成结论书,不可重复生成!");
         }
 
-        try {
-            //流转到结论送达
-            MessageInfo messageInfo = new MessageInfo();
-            messageInfo.setMessageStatus("0");
-            messageInfo.setWritingBatchId(appraise.getWritingBatchId());
-            messageInfo.setReportId(appraise.getReportId());
-            messageInfoService.save(messageInfo);
+        //流转到结论送达
+        MessageInfo messageInfo = new MessageInfo();
+        messageInfo.setMessageStatus("0");
+        messageInfo.setWritingBatchId(appraise.getWritingBatchId());
+        messageInfo.setReportId(appraise.getReportId());
+        messageInfoService.save(messageInfo);
+        CompletableFuture.runAsync(() -> {
             //文件保存
-            FileInfoVO fileInfoVO = wordBuild(dataReport.getSort(), dataReport.getUnitName(), dataReport.getIdentifiedName(),
-                    dataReport.getIdCart(), appraise.getAppraiseNumber(), dataReport.getSickCondition(), appraise.getAppraiseGrade(), appraise.getAppraisePrinciple(), appraise.getAppraiseResult(),
-                    appraise.getResultSickCondition(), appraise.getAppraiseTime());
-            this.fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), messageInfo.getMessageId());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            FileInfoVO fileInfoVO = null;
+            try {
+                fileInfoVO = wordBuild(dataReport.getSort(), dataReport.getUnitName(), dataReport.getIdentifiedName(),
+                        dataReport.getIdCart(), appraise.getAppraiseNumber(), qiniuUtil, appraise.getAppraiseGrade(), appraise.getAppraisePrinciple(), appraise.getAppraiseResult(),
+                        appraise.getResultSickCondition(), appraise.getAppraiseTime());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), messageInfo.getMessageId());
+        });
 
     }
 
@@ -93,7 +97,7 @@ public class WritingResultServiceImpl implements WritingResultService {
     }
 
     public FileInfoVO wordBuild(int sort, String unit, String name,
-                                String idCart, String number, String sickCondition,
+                                String idCart, String number, QiniuUtil qiniuUtil,
                                 String appraiseGrade, String appraisePrinciple, String appraiseResult, String resultSickCondition, String dateTime) throws IOException {
         DateTime time = DateUtil.parseDate(dateTime);
         HashMap<String, Object> info = new HashMap<String, Object>() {{
@@ -105,9 +109,8 @@ public class WritingResultServiceImpl implements WritingResultService {
             put("appraiseNumber", number);//编号
             put("appraiseGrade", appraiseGrade);//鉴定标准
             put("appraisePrinciple", appraisePrinciple);//依据原则
-            put("sickCondition", sickCondition);//病残情况
             put("appraiseResult", appraiseResult);//鉴定结论
-            put("resultSickCondition", appraiseResult);//鉴定结论
+            put("resultSickCondition", resultSickCondition);//鉴定结论
             put("unit", unit);//单位
         }};
         String resource = null;
