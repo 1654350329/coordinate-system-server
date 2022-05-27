@@ -86,7 +86,7 @@ public class DataReportController {
         examineProgressMap.put(3, "鉴定");
         examineProgressMap.put(4, "复核一");
         examineProgressMap.put(5, "复核二");
-        examineProgressMap.put(6, "认定审签");
+        examineProgressMap.put(6, "鉴定完结");
         map.put("examineProgressMap", examineProgressMap);
         return RestResponse.ok(map);
     }

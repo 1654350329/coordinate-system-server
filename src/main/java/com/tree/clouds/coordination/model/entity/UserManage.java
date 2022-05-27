@@ -97,7 +97,7 @@ public class UserManage extends BaseEntity {
 
     @ExcelProperty("账号")
     @ApiModelProperty(value = "账号")
-    @NotBlank(message = "账号不能为空")
+//    @NotBlank(message = "账号不能为空")
     @TableField(ACCOUNT)
     private String account;
 

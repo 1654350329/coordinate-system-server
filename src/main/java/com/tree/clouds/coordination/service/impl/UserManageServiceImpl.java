@@ -168,6 +168,9 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
 
     @Override
     public void addUserManage(UserManageBO userManageBO) {
+        if (StrUtil.isBlank(userManageBO.getAccount())) {
+            throw new BaseBusinessException(400, "用户账号不许为空");
+        }
         UserManage userByAccount = this.getUserByAccount(userManageBO.getAccount());
         if (userByAccount != null) {
             throw new BaseBusinessException(400, "账号已存在,请重新输入!!");
@@ -188,6 +191,8 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
 
     @Override
     public void updateUserManage(UserManageBO userManageBO) {
+        //不许修改账号
+        userManageBO.setAccount(null);
         if (StrUtil.isBlank(userManageBO.getUserId())) {
             throw new BaseBusinessException(400, "用户id不许为空");
         }
