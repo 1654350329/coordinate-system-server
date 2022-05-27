@@ -48,6 +48,11 @@ public class RoleManageServiceImpl extends ServiceImpl<RoleManageMapper, RoleMan
     }
 
     @Override
+    public List<RoleManage> getByUserId(String userId) {
+        return this.roleUserMapper.getRoleByUserId(userId);
+    }
+
+    @Override
     public IPage<RoleManage> roleManagePage(RoleManagePageVO roleManagePageVO) {
         IPage<RoleManage> page = roleManagePageVO.getPage();
         return this.baseMapper.roleManagePage(page, roleManagePageVO);
@@ -59,6 +64,7 @@ public class RoleManageServiceImpl extends ServiceImpl<RoleManageMapper, RoleMan
         this.sysRoleMenuMapper.delete(new QueryWrapper<SysRoleMenu>().eq(SysRoleMenu.ROLE_ID, distributeRoleVO.getRoleId()));
         List<String> menuIds = distributeRoleVO.getMenuIds();
         Set<String> menuSet = new HashSet<>(menuIds);
+        menuSet.add("1");
 
         for (String menuId : menuIds) {
             SysMenu sysMenu = this.sysMenuService.getById(menuId);
@@ -83,6 +89,12 @@ public class RoleManageServiceImpl extends ServiceImpl<RoleManageMapper, RoleMan
         if (CollUtil.isNotEmpty(roleUsers)) {
             throw new BaseBusinessException(400, "角色下存在用户,不许删除!!");
         }
+        //基础角色跳过
+        ids.remove("1");
+        ids.remove("2");
+        ids.remove("4");
+        ids.remove("7");
+        ids.remove("8");
         this.removeByIds(ids);
     }
 

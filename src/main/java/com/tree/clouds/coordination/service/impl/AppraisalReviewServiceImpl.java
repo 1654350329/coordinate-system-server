@@ -1,5 +1,6 @@
 package com.tree.clouds.coordination.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,6 +9,7 @@ import com.tree.clouds.coordination.model.bo.AppraisalReviewBO;
 import com.tree.clouds.coordination.model.entity.AppraisalReview;
 import com.tree.clouds.coordination.model.entity.Appraise;
 import com.tree.clouds.coordination.model.entity.DataReport;
+import com.tree.clouds.coordination.model.entity.RoleManage;
 import com.tree.clouds.coordination.model.vo.AppraisalReviewPageVO;
 import com.tree.clouds.coordination.model.vo.AppraisalReviewVO;
 import com.tree.clouds.coordination.service.*;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -41,12 +44,26 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
     private WritingResultService writingResultService;
     @Autowired
     private WritingBatchService writingBatchService;
+    @Autowired
+    private RoleManageService roleManageService;
 
     @Override
     public IPage<AppraisalReviewBO> appraisalReviewPage(AppraisalReviewPageVO appraisePageVO) {
         IPage<AppraisalReviewBO> page = appraisePageVO.getPage();
-        return this.baseMapper.appraisalReviewPage(page, appraisePageVO);
 
+        List<RoleManage> roleManages = roleManageService.getByUserId(LoginUserUtil.getUserId());
+        List<String> code = roleManages.stream().map(RoleManage::getRoleCode).collect(Collectors.toList());
+        int type = 0;
+        if (code.contains("ROLE_REVIEW_EXPERT_ONE")) {
+            type = 1;
+        }
+        if (code.contains("ROLE_REVIEW_EXPERT_TWO")) {
+            type = 2;
+        }
+        if (code.contains("ROLE_admin")) {
+            type = 0;
+        }
+        return this.baseMapper.appraisalReviewPage(page, appraisePageVO, type);
     }
 
     @Override
@@ -72,6 +89,9 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
                 this.updateById(appraisalReview);
             }
             if (review.getAppraisalReviewStatus().equals(1)) {
+                if (DateUtil.parseDate(review.getAppraisalReviewTimeOne()).getTime() > DateUtil.parseDate(appraisalReviewVO.getAppraisalReviewTime()).getTime()) {
+                    throw new BaseBusinessException(400, "二核时间不许小于一核时间");
+                }
                 this.dataReportService.updateDataExamine(Collections.singletonList(review.getReportId()), DataReport.EXAMINE_PROGRESS_FIVE, null);
                 appraisalReview.setAppraisalReviewStatus(2);
                 appraisalReview.setAppraisalReviewTimeTwo(appraisalReviewVO.getAppraisalReviewTime());
@@ -102,7 +122,10 @@ public class AppraisalReviewServiceImpl extends ServiceImpl<AppraisalReviewMappe
             }
             //二核驳回
             if (review.getAppraisalReviewStatus().equals(1)) {
-                review.setAppraisalReviewStatus(2);
+                if (DateUtil.parseDate(review.getAppraisalReviewTimeOne()).getTime() > DateUtil.parseDate(appraisalReviewVO.getAppraisalReviewTime()).getTime()) {
+                    throw new BaseBusinessException(400, "二核时间不许小于一核时间");
+                }
+                appraisalReview.setAppraisalReviewStatus(2);
                 appraisalReview.setAppraisalReviewTimeTwo(appraisalReviewVO.getAppraisalReviewTime());
                 appraisalReview.setAppraisalReviewResultTwo(appraisalReviewVO.getAppraisalReviewResult());
                 appraisalReview.setAppraisalReviewUserTwo(LoginUserUtil.getUserId());

@@ -96,6 +96,13 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         IPage<DataReportBO> page = dataReportPageVO.getPage();
         IPage<DataReportBO> dataReportBOIPage = this.baseMapper.selectDataReport(page, dataReportPageVO);
         dataReportBOIPage.getRecords().forEach(dataReportBO -> {
+            String writingBatch = writingBatchService.getByReportId(dataReportBO.getReportId());
+            if (dataReportBO.getAppraiseNumber() != null && writingBatch.contains("工")) {
+                dataReportBO.setAppraiseNumber(dataReportBO.getAppraiseNumber().replace("%s", "工"));
+            }
+            if (dataReportBO.getAppraiseNumber() != null && writingBatch.contains("病")) {
+                dataReportBO.setAppraiseNumber(dataReportBO.getAppraiseNumber().replace("%s", "病"));
+            }
             if (dataReportBO.getExamineProgress() < DataReport.EXAMINE_PROGRESS_SIX) {
                 dataReportBO.setAppraiseNumber(null);
             }
@@ -194,6 +201,8 @@ public class DataReportServiceImpl extends ServiceImpl<DataReportMapper, DataRep
         dataExamineService.removeByReportId(id);
         DataReport report = new DataReport();
         report.setReportId(id);
+        //撤销临时状态2
+        report.setStatus(2);
         report.setExamineProgress(DataReport.EXAMINE_PROGRESS_ZERO);
         this.updateById(report);
     }

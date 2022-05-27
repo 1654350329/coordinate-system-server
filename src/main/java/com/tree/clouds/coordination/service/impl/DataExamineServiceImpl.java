@@ -57,7 +57,7 @@ public class DataExamineServiceImpl extends ServiceImpl<DataExamineMapper, DataE
             dataExamine.setExamineTime(DateUtil.format(new Date(), "YYYY-MM-dd"));
             dataExamine.setExamineStatus(1);
             this.updateById(dataExamine);
-            //修改审核成功状态为到3鉴定 失败为0初始
+            //修改审核成功状态为到2鉴定 失败为0初始
             if (dataExamineVO.getStatus() == 0) {
                 dataReportService.updateDataExamine(Collections.singletonList(report.getReportId()), DataReport.EXAMINE_PROGRESS_ZERO, dataExamineVO.getExamineDescribe());
             } else {

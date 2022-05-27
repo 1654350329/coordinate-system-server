@@ -20,10 +20,19 @@
         <if test="appraisalReviewPageVO.appraiseNumber != null and appraisalReviewPageVO.appraiseNumber !=''">
             and a.appraiseNumber=#{appraisalReviewPageVO.appraiseNumber}
         </if>
-        <if test="appraisalReviewPageVO.appraisalReviewStatus != null and appraisalReviewPageVO.appraisalReviewStatus !=''">
-            and a.appraisal_Review_Status=#{appraisalReviewPageVO.appraisalReviewStatus}
+        <if test="appraisalReviewPageVO.appraisalReviewStatus == 0 and type == 0">
+            and a.appraisal_Review_Status &lt;=1 and a.APPRAISAL_REVIEW_RESULT != 0
         </if>
-        <if test="appraisalReviewPageVO.reviewResult != null and appraisalReviewPageVO.reviewResult !=''">
+        <if test="appraisalReviewPageVO.appraisalReviewStatus == 0 and type == 1">
+            and a.appraisal_Review_Status =0 and a.APPRAISAL_REVIEW_RESULT !=0
+        </if>
+        <if test="appraisalReviewPageVO.appraisalReviewStatus == 0 and type == 2">
+            and a.appraisal_Review_Status =1 and a.APPRAISAL_REVIEW_RESULT !=0
+        </if>
+        <if test="appraisalReviewPageVO.appraisalReviewStatus == 3">
+            and ( a.appraisal_Review_Status =2 or a.APPRAISAL_REVIEW_RESULT = 0)
+        </if>
+        <if test="appraisalReviewPageVO.reviewResult != null">
             and (a.APPRAISAL_REVIEW_RESULT_ONE=#{appraisalReviewPageVO.reviewResult} or
             a.APPRAISAL_REVIEW_RESULT_TWO=#{appraisalReviewBO.reviewResult})
         </if>

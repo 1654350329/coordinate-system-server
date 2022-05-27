@@ -18,6 +18,7 @@
         <if test="operationLogPageVO.endTime!=null and operationLogPageVO.endTime!=''">
             and a.created_time &lt;= #{operationLogPageVO.endTime}
         </if>
+        order by a.created_time desc
     </select>
 
 </mapper>

@@ -29,7 +29,8 @@
         PHONE_NUMBER, ADDRESS, CREATED_USER, CREATED_TIME, UPDATED_USER, UPDATED_TIME, DEL
     </sql>
     <select id="selectDataReport" resultType="com.tree.clouds.coordination.model.bo.DataReportBO">
-        select a.* ,b.APPRAISE_NUMBER from data_report a
+        select a.* ,CONCAT('南劳鉴%s字[',left(b.WRITING_BATCH_ID,4),']第',b.APPRAISE_NUMBER,'号') as APPRAISE_NUMBER from
+        data_report a
         left join appraisal_review b on a.report_id=b.report_id
         where 1=1 and a.del=0
         <if test="dataReportPageVO.identifiedName != null and dataReportPageVO.identifiedName !=''">
@@ -65,7 +66,7 @@
         </if>
     </select>
     <select id="getDetailInfo" resultType="com.tree.clouds.coordination.model.bo.ReportDetailInfoBO">
-        select a.*, b.APPRAISE_GRADE, b.APPRAISE_RESULT, b.APPRAISE_NUMBER
+        select b.RESULT_SICK_CONDITION as SICK_CONDITION,a.*, b.APPRAISE_GRADE, b.APPRAISE_RESULT, b.APPRAISE_NUMBER
         from data_report a
         left join appraise b on a.report_ID = b.report_ID
         where a.REPORT_ID in

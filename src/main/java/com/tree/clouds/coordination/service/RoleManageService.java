@@ -26,6 +26,8 @@ public interface RoleManageService extends IService<RoleManage> {
      */
     List<UserManage> getUserInfoByRole(String roleName);
 
+    List<RoleManage> getByUserId(String userId);
+
     IPage<RoleManage> roleManagePage(RoleManagePageVO roleManagePageVO);
 
     void distributeRole(DistributeRoleVO distributeRoleVO);

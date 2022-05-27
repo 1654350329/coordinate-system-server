@@ -59,7 +59,7 @@ public class WritingResultServiceImpl implements WritingResultService {
     public void writingBuild(String reportId) {
         DataReport dataReport = this.dataReportService.getById(reportId);
         Appraise appraise = appraiseService.getByReportId(reportId);
-        QueryWrapper<MessageInfo> wrapper = new QueryWrapper();
+        QueryWrapper<MessageInfo> wrapper = new QueryWrapper<>();
         wrapper.eq(MessageInfo.REPORT_ID, reportId);
         List<MessageInfo> list = messageInfoService.list(wrapper);
         if (CollUtil.isNotEmpty(list)) {
@@ -71,7 +71,7 @@ public class WritingResultServiceImpl implements WritingResultService {
         messageInfo.setMessageStatus("0");
         messageInfo.setWritingBatchId(appraise.getWritingBatchId());
         messageInfo.setReportId(appraise.getReportId());
-        messageInfoService.save(messageInfo);
+        messageInfoService.saveOrUpdate(messageInfo, new QueryWrapper<MessageInfo>().eq(MessageInfo.REPORT_ID, appraise.getReportId()));
         CompletableFuture.runAsync(() -> {
             //文件保存
             FileInfoVO fileInfoVO = null;

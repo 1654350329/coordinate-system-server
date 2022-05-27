@@ -18,7 +18,7 @@ public class DrawVO {
     private List<String> userIds;
 
     @NotNull(message = "抽签专家类型不许为空")
-    @ApiModelProperty(value = "抽签专家类型(1 参评专家 2备选专家)")
+    @ApiModelProperty(value = "抽签专家类型(0 全部 1 参评专家 2备选专家)")
     private Integer expertType;
 
 }

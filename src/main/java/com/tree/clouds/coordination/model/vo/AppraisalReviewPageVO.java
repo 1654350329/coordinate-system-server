@@ -15,7 +15,7 @@ public class AppraisalReviewPageVO extends PageParam {
     @ApiModelProperty(value = "认定对象名称")
     private String identifiedName;
 
-    @ApiModelProperty(value = "审签状态(0待审签 1 已审签)")
+    @ApiModelProperty(value = "审签状态(0待复核 1 一核 2核 3复核记录)")
     private Integer appraisalReviewStatus;
 
     @ApiModelProperty(value = "审签结果 0驳回  1通过")

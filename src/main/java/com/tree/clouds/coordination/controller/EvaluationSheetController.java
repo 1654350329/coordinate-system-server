@@ -89,6 +89,15 @@ public class EvaluationSheetController {
         return RestResponse.ok(true);
     }
 
+    @PostMapping("/updateExpertUsers")
+    @ApiOperation("抽签专家列表")
+    @Log("抽签专家列表")
+    @PreAuthorize("hasAuthority('evaluation:sheet:draw')")
+    public RestResponse<Boolean> updateExpertUsers(@RequestBody DrawVO drawVO) {
+        evaluationSheetService.updateExpertUsers(drawVO.getUserIds(), drawVO.getWritingBatchId());
+        return RestResponse.ok(true);
+    }
+
     @PostMapping("/drawInfo")
     @ApiOperation("抽签信息")
     @Log("抽签信息")

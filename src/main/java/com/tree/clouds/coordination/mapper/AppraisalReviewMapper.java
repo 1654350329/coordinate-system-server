@@ -17,5 +17,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface AppraisalReviewMapper extends BaseMapper<AppraisalReview> {
 
-    IPage<AppraisalReviewBO> appraisalReviewPage(IPage<AppraisalReviewBO> page, @Param("appraisalReviewPageVO") AppraisalReviewPageVO appraisalReviewPageVO);
+    IPage<AppraisalReviewBO> appraisalReviewPage(IPage<AppraisalReviewBO> page, @Param("appraisalReviewPageVO") AppraisalReviewPageVO appraisalReviewPageVO, int type);
 }

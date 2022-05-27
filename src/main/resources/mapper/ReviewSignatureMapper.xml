@@ -87,6 +87,7 @@
         <if test="writingResultPageVO.reportTimeEnd != null and writingResultPageVO.reportTimeEnd != ''">
             and b.CREATED_TIME &lt;= #{writingResultPageVO.reportTimeEnd}
         </if>
+        order by a.UPDATED_TIME desc
     </select>
 
 

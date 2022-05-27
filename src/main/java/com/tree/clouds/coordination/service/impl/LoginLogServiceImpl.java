@@ -10,16 +10,21 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.mapper.LoginLogMapper;
 import com.tree.clouds.coordination.model.entity.LoginLog;
+import com.tree.clouds.coordination.model.entity.RoleManage;
 import com.tree.clouds.coordination.model.vo.ExportLoginLogVO;
 import com.tree.clouds.coordination.model.vo.LoginLogPageVO;
 import com.tree.clouds.coordination.service.LoginLogService;
+import com.tree.clouds.coordination.service.RoleManageService;
 import com.tree.clouds.coordination.utils.DownloadFile;
+import com.tree.clouds.coordination.utils.LoginUserUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -32,8 +37,16 @@ import java.util.List;
 @Service
 public class LoginLogServiceImpl extends ServiceImpl<LoginLogMapper, LoginLog> implements LoginLogService {
 
+    @Autowired
+    private RoleManageService roleManageService;
+
     @Override
     public IPage<LoginLog> loginLogPage(LoginLogPageVO loginLogPageVO) {
+        List<RoleManage> manages = roleManageService.getByUserId(LoginUserUtil.getUserId());
+        List<String> collect = manages.stream().map(RoleManage::getRoleCode).collect(Collectors.toList());
+        if (!collect.contains("ROLE_admin")) {
+            loginLogPageVO.setAccount(LoginUserUtil.getUserAccount());
+        }
         IPage<LoginLog> page = loginLogPageVO.getPage();
         QueryWrapper<LoginLog> wrapper = new QueryWrapper<>();
         wrapper.orderByDesc(LoginLog.CREATED_TIME);
@@ -49,6 +62,7 @@ public class LoginLogServiceImpl extends ServiceImpl<LoginLogMapper, LoginLog> i
         if (StrUtil.isNotBlank(loginLogPageVO.getLoginEndTime())) {
             wrapper.lt(LoginLog.CREATED_TIME, loginLogPageVO.getLoginEndTime());
         }
+        wrapper.orderByDesc(LoginLog.CREATED_TIME);
         return this.baseMapper.selectPage(page, wrapper);
 
     }

@@ -104,6 +104,10 @@ public class EvaluationSheet extends BaseEntity {
     @TableField(UPLOAD_STATUS)
     private int uploadStatus;
 
+    @ApiModelProperty(value = "专家列表")
+    @TableField("expert_users")
+    private String expertUsers;
+
     @ApiModelProperty(value = "通知书路径")
     @TableField(exist = false)
     private String filePath;

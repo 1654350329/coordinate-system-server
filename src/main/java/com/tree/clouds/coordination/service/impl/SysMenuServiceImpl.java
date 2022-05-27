@@ -1,6 +1,7 @@
 package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tree.clouds.coordination.mapper.SysMenuMapper;
 import com.tree.clouds.coordination.mapper.SysRoleMenuMapper;
@@ -56,7 +57,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Override
     public List<SysMenuTreeVO> tree() {
         // 获取所有菜单信息
-        List<SysMenu> sysMenus = this.list();
+        List<SysMenu> sysMenus = this.list(new QueryWrapper<SysMenu>().ne("id", "1"));
         ArrayList<SysMenuTreeVO> sysMenuVOS = new ArrayList<>();
         for (SysMenu sysMenu : sysMenus) {
             SysMenuTreeVO sysMenuVO = BeanUtil.toBean(sysMenu, SysMenuTreeVO.class);

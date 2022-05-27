@@ -156,6 +156,13 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     }
 
     @Override
+    public void updateExpertUsers(List<String> ids, String writingBatchId) {
+        EvaluationSheet evaluationSheet = this.getByWritingBatchId(writingBatchId);
+        evaluationSheet.setExpertUsers(String.join(",", ids));
+        this.updateById(evaluationSheet);
+    }
+
+    @Override
     @Transactional
     public void draw(DrawVO drawVO) {
         EvaluationSheet evaluationSheet = this.getByWritingBatchId(drawVO.getWritingBatchId());

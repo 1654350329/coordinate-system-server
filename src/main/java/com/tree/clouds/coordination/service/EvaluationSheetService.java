@@ -111,4 +111,6 @@ public interface EvaluationSheetService extends IService<EvaluationSheet> {
     EvaluationSheet evaluationSheetDetail(String id);
 
     IPage<ExpertDetailVO> expertDetailPage(WritingBatchVO writingBatchVO);
+
+    void updateExpertUsers(List<String> ids, String writingBatchId);
 }
