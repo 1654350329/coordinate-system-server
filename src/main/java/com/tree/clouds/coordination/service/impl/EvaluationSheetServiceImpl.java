@@ -29,8 +29,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.Transient;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -51,9 +51,6 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
 
     @Autowired
     private DataReportService dataReportService;
-
-    @Autowired
-    private RoleManageService roleManageService;
 
     @Autowired
     private UserManageService userManageService;
@@ -275,6 +272,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
     }
 
     @Override
+    @Transactional
     public Boolean releaseEvaluation(EvaluationReleaseVO evaluationReleaseVO) {
         EvaluationSheet evaluationSheet = this.baseMapper.getByWritingBatchId(evaluationReleaseVO.getWritingBatchId());
         if (evaluationSheet.getReleaseStatus() == 1) {
@@ -303,16 +301,16 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         appraiseService.saveAppraise(reportIds, evaluationReleaseVO.getWritingBatchId());
 
         List<UserManage> userManages = userManageService.listByIds(userIds);
-        try {
-            FileInfoVO fileInfoVO = wordBuild(userManages, evaluationReleaseVO);
-            //保存路径
-            fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), evaluationSheet.getEvaluationId());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         List<String> phones = userManages.stream().map(UserManage::getPhoneNumber).collect(Collectors.toList());
         //发送短信通知专家
         CompletableFuture.runAsync(() -> {
+            try {
+                FileInfoVO fileInfoVO = wordBuild(userManages, evaluationReleaseVO,qiniuUtil);
+                //保存路径
+                fileInfoService.saveFileInfo(Collections.singletonList(fileInfoVO), evaluationSheet.getEvaluationId());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             String content = String.format("【南平市】经研究，定于%s，在%s召开相关类别的因病和工伤职工劳动能力鉴定会，时间半天。", evaluationReleaseVO.getReleaseTime(), evaluationReleaseVO.getReleaseAddress());
             smsUtil.endMs(content, phones);
         });
@@ -411,7 +409,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         return iPages;
     }
 
-    public FileInfoVO wordBuild(List<UserManage> userManages, EvaluationReleaseVO evaluationReleaseVO) throws IOException {
+    public FileInfoVO wordBuild(List<UserManage> userManages, EvaluationReleaseVO evaluationReleaseVO,QiniuUtil qiniuUtil) throws IOException {
         Calendar now = Calendar.getInstance();
         List<Map<String, Object>> listDate = new ArrayList<>();
         for (int i = 0; i < userManages.size(); i++) {
@@ -433,23 +431,23 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             put("number", userManages.size());//人数
 
         }};
-        String resource = this.getClass().getClassLoader().getResource("file.docx").getFile();
+
+        InputStream in = this.getClass().getResourceAsStream("/file.docx");
         //渲染表格  动态行
         HackLoopTableRenderPolicy policy = new HackLoopTableRenderPolicy();
         Configure config = Configure.newBuilder()
                 .bind("listDate", policy).build();
-        XWPFTemplate template = XWPFTemplate.compile(resource, config).render(info);
+        XWPFTemplate template = XWPFTemplate.compile(in, config).render(info);
         //=================生成文件保存在临时目录下=================
         // 生成的word格式
         String formatSuffix = ".docx";
         // 拼接后的文件名
         String fileName = "通知书" + evaluationReleaseVO.getWritingBatchId() + formatSuffix;//文件名  带后缀
 
-        FileOutputStream fos = new FileOutputStream(Constants.TMP_HOME + fileName);
-        template.write(fos);
-        String file = Word2PdfUtil.doc2Img(Constants.TMP_HOME + fileName, Constants.TMP_HOME);
+        template.writeToFile(Constants.TMP_HOME + fileName);
+        String filePath = Word2PdfUtil.doc2Img(Constants.TMP_HOME + fileName, Constants.TMP_HOME);
         //上传文件
-        String fileKey = qiniuUtil.fileUpload(file);
+        String fileKey = qiniuUtil.fileUpload(filePath);
         FileInfoVO fileInfoVO = new FileInfoVO();
         fileInfoVO.setType("7");
         fileInfoVO.setFilePath(fileKey);
@@ -457,6 +455,5 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
         return fileInfoVO;
 
     }
-
 
 }

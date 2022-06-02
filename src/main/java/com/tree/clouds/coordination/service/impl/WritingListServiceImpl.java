@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -128,8 +129,7 @@ public class WritingListServiceImpl implements WritingListService {
                 dates.add(data);
             }
 
-            String resource = this.getClass().getClassLoader().getResource("WritingListDetail.xlsx").getFile();
-
+           InputStream resource = this.getClass().getResourceAsStream("/WritingListDetail.xlsx");
             filePath = Constants.TMP_HOME + "\\行文名单\\" + fileName;
             ExcelWriter excelWriter = EasyExcel.write(filePath)
                     .withTemplate(resource)

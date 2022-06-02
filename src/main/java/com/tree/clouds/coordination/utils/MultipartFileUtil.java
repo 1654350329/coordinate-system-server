@@ -1,5 +1,6 @@
 package com.tree.clouds.coordination.utils;
 
+import com.tree.clouds.coordination.common.Constants;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public class MultipartFileUtil {
         } else {
             InputStream ins = null;
             ins = file.getInputStream();
-            toFile = new File(file.getOriginalFilename());
+            toFile = new File(Constants.TMP_HOME+file.getName());
             inputStreamToFile(ins, toFile);
             ins.close();
         }

@@ -25,7 +25,7 @@ public interface UserManageService extends IService<UserManage> {
 
     void userStatus(List<String> ids, int status);
 
-    void importUser(MultipartFile file);
+    void importUser(MultipartFile file, String roleId);
 
     void exportUser(List<String> ids, HttpServletResponse response);
 

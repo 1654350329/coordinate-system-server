@@ -23,7 +23,7 @@ public interface UserManageMapper extends BaseMapper<UserManage> {
 
     List<UserManage> listByMenuId(@Param("menuId") String menuId);
 
-    UserManage isExist(String account, String phone);
+    List<UserManage> isExist(String account, String phone);
 
     List<UserManage> listByRoleId(@Param("roleId") String roleId);
 }

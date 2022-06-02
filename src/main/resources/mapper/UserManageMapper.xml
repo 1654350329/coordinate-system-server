@@ -45,16 +45,16 @@
         <if test="userManagePageVO.roleId != null and userManagePageVO.roleId != ''">
             and d.role_id = #{userManagePageVO.roleId}
         </if>
-
+        order by a.CREATED_TIME
     </select>
     <select id="listByMenuId" resultType="com.tree.clouds.coordination.model.entity.UserManage">
         select DISTINCT a.* from user_manage a
-            LEFT JOIN role_user  b on a.USER_ID=b.USER_ID
+            LEFT JOIN role_user  b on a.USER_ID=b.USER_ID发布
             LEFT JOIN sys_role_menu c on b.ROLE_ID=c.role_id
             where c.menu_id=#{menuId}
     </select>
     <select id="isExist" resultType="com.tree.clouds.coordination.model.entity.UserManage">
-        select * from user_manage where account=#{account} or PHONE_NUMBER=#{phone}
+        select * from user_manage where (account=#{account} or PHONE_NUMBER=#{phone}) and del=0
     </select>
     <select id="listByRoleId" resultType="com.tree.clouds.coordination.model.entity.UserManage">
          select DISTINCT a.* from user_manage a

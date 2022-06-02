@@ -71,6 +71,7 @@ public class UserManage extends BaseEntity {
     @NotBlank(message = "工作单位不能为空")
     @TableField(UNIT)
     private String unit;
+
     @ExcelProperty("所属地区")
     @ApiModelProperty(value = "所属地区")
     @NotBlank(message = "所属地区不能为空")
@@ -113,13 +114,13 @@ public class UserManage extends BaseEntity {
 //    @NotBlank(message = "微信授权不能为空")
     private String wechatAuthorization;
 
-    @ExcelProperty("是否收取通知")
+    @ExcelIgnore
     @ApiModelProperty(value = "是否收取通知 0否 1是")
 //    @NotNull(message = "是否收取通知不能为空")
     @TableField(RECEIVE_NOTICE_STATUS)
     private Integer receiveNoticeStatus;
 
-    @ExcelProperty("账号状态")
+    @ExcelProperty("账号状态 0可用 1不可用")
     @ApiModelProperty(value = "账号状态 0可用 1不可用")
     @NotNull(message = "账号状态不能为空")
     @TableField(ACCOUNT_STATUS)

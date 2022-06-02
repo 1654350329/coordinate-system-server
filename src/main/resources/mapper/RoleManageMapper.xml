@@ -22,6 +22,7 @@
         <if test="roleManagePageVO.roleName !=null and roleManagePageVO.roleName!=''">
             and ROLE_NAME like "%"#{roleManagePageVO.roleName}"%"
         </if>
+        order by CREATED_TIME
     </select>
 
 </mapper>

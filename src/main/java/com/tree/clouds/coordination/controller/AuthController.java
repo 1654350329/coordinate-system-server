@@ -6,12 +6,14 @@ import com.tree.clouds.coordination.common.RestResponse;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.service.UserManageService;
 import com.tree.clouds.coordination.utils.LoginUserUtil;
+import com.tree.clouds.coordination.utils.QiniuUtil;
 import com.tree.clouds.coordination.utils.RedisUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sun.misc.BASE64Encoder;
@@ -40,6 +42,8 @@ public class AuthController {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private UserManageService userManageService;
+    @Autowired
+    private QiniuUtil qiniuUtil;
 
     @GetMapping("/captcha")
     @ApiOperation(value = "获取验证码")
@@ -63,6 +67,19 @@ public class AuthController {
         map.put("key", key);
         map.put("captchaImg", base64Img);
         return RestResponse.ok(map);
+    }
+
+
+    /**
+     * 文件上传
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/getQNToken")
+    @ApiOperation(value = "获取七牛token")
+    public RestResponse<String> getQNToken() {
+        return RestResponse.ok(qiniuUtil.getUploadCredential());
     }
 
     @GetMapping("/info")

@@ -2,6 +2,7 @@ package com.tree.clouds.coordination.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.codec.Base64;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -30,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -77,7 +79,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
     }
 
     @Override
-    public void importUser(MultipartFile multipartFile) {
+    public void importUser(MultipartFile multipartFile, String roleId) {
         try {
             File file = MultipartFileUtil.multipartFileToFile(multipartFile);
             EasyExcel.read(file, UserManage.class, new UserManagerExcelListener()).sheet(0).doRead();
@@ -90,12 +92,19 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
         List<UserManage> userManages = UserManagerExcelListener.getDatas();
 
         for (UserManage userManage : userManages) {
-            UserManage userByAccount = this.baseMapper.isExist(userManage.getAccount(), userManage.getPhoneNumber());
-            if (userByAccount != null) {
-                throw new BaseBusinessException(400, "账号:" + userByAccount.getAccount() + "已存在!!或手机号码:" + userManage.getPhoneNumber() + "已存在");
+            List<UserManage> userByAccount = this.baseMapper.isExist(userManage.getAccount(), userManage.getPhoneNumber());
+            if (CollUtil.isNotEmpty(userByAccount)) {
+                throw new BaseBusinessException(400, "账号:" + userManage.getAccount() + "已存在!!或手机号码:" + userManage.getPhoneNumber() + "已存在");
             }
+            // 加密后密码
+            String password = bCryptPasswordEncoder.encode("888888");
+            userManage.setPassword(password);
+            userManage.setUserId(null);
             this.save(userManage);
+            //绑定角色
+            roleUserService.addRole(Collections.singletonList(roleId), userManage.getUserId());
         }
+
 
     }
 

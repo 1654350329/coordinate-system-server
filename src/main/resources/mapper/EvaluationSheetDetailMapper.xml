@@ -30,6 +30,7 @@
         <if test="writingBatchVO.participationStatus !=null">
             and b.participation_Status=#{writingBatchVO.participationStatus}
         </if>
+        order by a.UPDATED_TIME desc
     </select>
 
 

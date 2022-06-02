@@ -96,9 +96,9 @@ public class UserManageController {
     @PostMapping("/importUser")
     @ApiOperation(value = "导入用户")
     @Log("导入用户")
-    @PreAuthorize("hasAuthority('user:manage:import')")
-    public RestResponse<Boolean> importUser(@RequestParam("file") MultipartFile file) {
-        userManageservice.importUser(file);
+//    @PreAuthorize("hasAuthority('user:manage:import')")
+    public RestResponse<Boolean> importUser(@RequestParam("file") MultipartFile file,String roleId) {
+        userManageservice.importUser(file,roleId);
         return RestResponse.ok(true);
     }
 

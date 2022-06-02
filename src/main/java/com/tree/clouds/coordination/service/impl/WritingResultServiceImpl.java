@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -113,27 +114,25 @@ public class WritingResultServiceImpl implements WritingResultService {
             put("resultSickCondition", resultSickCondition);//鉴定结论
             put("unit", unit);//单位
         }};
-        String resource = null;
-        String none = null;
+        InputStream resource = null;
+        InputStream none = null;
         //病无单位
         if (sort == 1) {
             if (StrUtil.isBlank(unit)) {
-                resource = this.getClass().getClassLoader().getResource("result.docx").getFile();
-                none = this.getClass().getClassLoader().getResource("result_none.docx").getFile();
+                resource = this.getClass().getResourceAsStream("/result.docx");
+                none = this.getClass().getResourceAsStream("/result_none.docx");
             } else {
                 //病有单位
-                resource = this.getClass().getClassLoader().getResource("result2.docx").getFile();
-                none = this.getClass().getClassLoader().getResource("result2_none.docx").getFile();
+                resource = this.getClass().getResourceAsStream("/result2.docx");
+                none = this.getClass().getResourceAsStream("/result2_none.docx");
             }
-        }
-        //工
-        if (sort == 0) {
-            resource = this.getClass().getClassLoader().getResource("result3.docx").getFile();
-            none = this.getClass().getClassLoader().getResource("result3_none.docx").getFile();
+        } else {
+            //工
+            resource = this.getClass().getResourceAsStream("/result3.docx");
+            none = this.getClass().getResourceAsStream("/result3_none.docx");
         }
         //渲染表格  动态行
         Configure config = Configure.newBuilder().build();
-        assert resource != null;
         XWPFTemplate template = XWPFTemplate.compile(resource, config).render(info);
         String formatSuffix = ".docx";
         String fileName = "南劳鉴病字［" + DateUtil.year(time) + "］第" + number + "号结论书";//文件名  带后缀
