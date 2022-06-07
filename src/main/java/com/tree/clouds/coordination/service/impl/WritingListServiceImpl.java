@@ -68,7 +68,12 @@ public class WritingListServiceImpl implements WritingListService {
     public WritingListDetailVO writingListDetail(String writingBatchId) {
         WritingListDetailVO writingListDetailVO = new WritingListDetailVO();
         EvaluationSheet evaluationSheet = evaluationSheetService.getByWritingBatchId(writingBatchId);
-        writingListDetailVO.setTime(evaluationSheet.getYear() + "年" + evaluationSheet.getMonth() + "月");
+        writingListDetailVO.setCtime(evaluationSheet.getYear() + "年" + evaluationSheet.getMonth() + "月");
+        if (evaluationSheet.getCycleTime() != null) {
+            String trim = evaluationSheet.getCycleTime().split("--")[1].trim();
+            String[] split = trim.split("-");
+            writingListDetailVO.setTime(split[0] + "年" + split[1] + "月" + split[2] + "日");
+        }
         List<String> reports = writingBatchService.getReportByWritingBatchId(writingBatchId);
         List<ReportDetailInfoBO> detailInfoBOS = dataReportMapper.getDetailInfo(reports);
         writingListDetailVO.setDataReports(detailInfoBOS);
@@ -102,10 +107,10 @@ public class WritingListServiceImpl implements WritingListService {
         FileUtil.mkdir(Constants.TMP_HOME + "行文名单");
         for (String writingBatchId : writingBatchIds) {
             WritingListDetailVO writingListDetailVO = writingListDetail(writingBatchId);
-            String time = format(writingListDetailVO.getTime());
-            String fileName = time + "劳动能力鉴定等级人员名单" + UUID.fastUUID().toString().substring(0, 4) + ".xlsx";
+            String ctime = format(writingListDetailVO.getCtime());
+            String fileName = ctime + "劳动能力鉴定等级人员名单" + UUID.fastUUID().toString().substring(0, 4) + ".xlsx";
             Map<String, Object> head = new HashMap<>();
-            head.put("ctime", time);
+            head.put("ctime", ctime);
             head.put("time", writingListDetailVO.getTime());
             head.put("examineUser", writingListDetailVO.getExamineUser());
             head.put("appraisalReviewUser", writingListDetailVO.getAppraisalReviewUser());
@@ -128,7 +133,7 @@ public class WritingListServiceImpl implements WritingListService {
                 dates.add(data);
             }
 
-           InputStream resource = this.getClass().getResourceAsStream("/WritingListDetail.xlsx");
+            InputStream resource = this.getClass().getResourceAsStream("/WritingListDetail.xlsx");
             filePath = Constants.TMP_HOME + "行文名单/" + fileName;
             ExcelWriter excelWriter = EasyExcel.write(filePath)
                     .withTemplate(resource)

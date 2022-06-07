@@ -12,6 +12,8 @@ public class WritingListDetailVO {
     private List<ReportDetailInfoBO> dataReports;
 
     @ApiModelProperty(value = "时间")
+    private String ctime;
+    @ApiModelProperty(value = "时间")
     private String time;
     @ApiModelProperty(value = "审批人")
     private String examineUser;
