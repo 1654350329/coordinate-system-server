@@ -311,7 +311,7 @@ public class EvaluationSheetServiceImpl extends ServiceImpl<EvaluationSheetMappe
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            String content = String.format("【南平市】经研究，定于%s，在%s召开相关类别的因病和工伤职工劳动能力鉴定会，时间半天。", evaluationReleaseVO.getReleaseTime(), evaluationReleaseVO.getReleaseAddress());
+            String content = String.format("【南平市】经研究，定于%s，在%s召开相关类别的因病和工伤职工劳动能力鉴定会，时间半天。请准时参加。如有疑问，详询福建省南平市劳动能力鉴定委员会。", evaluationReleaseVO.getReleaseTime(), evaluationReleaseVO.getReleaseAddress());
             smsUtil.endMs(content, phones);
         });
 

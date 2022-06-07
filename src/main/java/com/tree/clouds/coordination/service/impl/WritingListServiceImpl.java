@@ -73,12 +73,12 @@ public class WritingListServiceImpl implements WritingListService {
         List<ReportDetailInfoBO> detailInfoBOS = dataReportMapper.getDetailInfo(reports);
         writingListDetailVO.setDataReports(detailInfoBOS);
 
-        List<String> appraisalReviewUsers = new ArrayList<>();
+        Set<String> appraisalReviewUsers = new LinkedHashSet<>();
         List<String> examineUsers = new ArrayList<>();
         List<String> reportUsers = new ArrayList<>();
         List<writingListUserVO> writingListUserVOS = evaluationSheetService.getUserId(writingBatchId);
         for (writingListUserVO writingListUserVO : writingListUserVOS) {
-            appraisalReviewUsers.add(writingListUserVO.getAppraisalReviewUserTwo());
+            appraisalReviewUsers.addAll(Arrays.asList(writingListUserVO.getAppraisalReviewUserTwo().split(",")));
             examineUsers.add(writingListUserVO.getExamineUser());
             reportUsers.add(writingListUserVO.getReportUser());
         }
@@ -98,13 +98,12 @@ public class WritingListServiceImpl implements WritingListService {
             throw new BaseBusinessException(400, "请钩选要导出的行文名单!");
         }
         String filePath = null;
-        FileUtil.del(Constants.TMP_HOME + "\\行文名单");
-        FileUtil.mkdir(Constants.TMP_HOME + "\\行文名单");
+        FileUtil.del(Constants.TMP_HOME + "行文名单");
+        FileUtil.mkdir(Constants.TMP_HOME + "行文名单");
         for (String writingBatchId : writingBatchIds) {
             WritingListDetailVO writingListDetailVO = writingListDetail(writingBatchId);
             String time = format(writingListDetailVO.getTime());
             String fileName = time + "劳动能力鉴定等级人员名单" + UUID.fastUUID().toString().substring(0, 4) + ".xlsx";
-            System.out.println("fileName = " + fileName);
             Map<String, Object> head = new HashMap<>();
             head.put("ctime", time);
             head.put("time", writingListDetailVO.getTime());
@@ -130,7 +129,7 @@ public class WritingListServiceImpl implements WritingListService {
             }
 
            InputStream resource = this.getClass().getResourceAsStream("/WritingListDetail.xlsx");
-            filePath = Constants.TMP_HOME + "\\行文名单\\" + fileName;
+            filePath = Constants.TMP_HOME + "行文名单/" + fileName;
             ExcelWriter excelWriter = EasyExcel.write(filePath)
                     .withTemplate(resource)
                     .build();

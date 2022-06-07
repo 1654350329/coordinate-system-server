@@ -91,7 +91,7 @@
 
     </select>
     <select id="getUserId" resultType="com.tree.clouds.coordination.model.vo.writingListUserVO">
-        select DISTINCT  c.examine_user,d.CREATED_USER as reportUser,e.APPRAISAL_REVIEW_USER_TWO from evaluation_sheet a
+        select DISTINCT  c.examine_user,d.CREATED_USER as reportUser,CONCAT(e.APPRAISAL_REVIEW_USER_One,",",e.APPRAISAL_REVIEW_USER_TWO) as appraisalReviewUserTwo from evaluation_sheet a
             LEFT JOIN writing_batch b on a.WRITING_BATCH_ID=b.WRITING_BATCH_ID
             LEFT JOIN data_examine c on b.report_ID=c.report_id
             left JOIN data_report d ON c.report_ID=d.report_id
