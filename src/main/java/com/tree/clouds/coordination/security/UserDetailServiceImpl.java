@@ -1,9 +1,11 @@
 package com.tree.clouds.coordination.security;
 
 
+import com.tree.clouds.coordination.common.Constants;
 import com.tree.clouds.coordination.model.entity.UserManage;
 import com.tree.clouds.coordination.service.UserManageService;
 import com.tree.clouds.coordination.utils.BaseBusinessException;
+import com.tree.clouds.coordination.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -19,6 +21,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Autowired
     private UserManageService userManageService;
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -29,6 +33,10 @@ public class UserDetailServiceImpl implements UserDetailsService {
         }
         if (userManage.getAccountStatus() == 1) {
             throw new BaseBusinessException(400, "账号已停用");
+        }
+        Object time = redisUtil.hget(Constants.LOCK_ACCOUNT, username);
+        if (time != null) {
+            throw new BaseBusinessException(400, "账号于" + time + "锁定10分钟");
         }
         return new AccountUser(userManage.getUserId(), userManage.getAccount(), userManage.getPassword(), getUserAuthority(userManage.getUserId()));
     }

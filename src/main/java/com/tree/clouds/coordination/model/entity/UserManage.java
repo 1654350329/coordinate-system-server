@@ -39,6 +39,7 @@ public class UserManage extends BaseEntity {
     public static final String TITLE_GRADE = "TITLE_GRADE";
     public static final String ACCOUNT = "ACCOUNT";
     public static final String PASSWORD = "PASSWORD";
+    public static final String PASSWORD_TIME = "PASSWORD_TIME";
     public static final String WECHAT_AUTHORIZATION = "WECHAT_AUTHORIZATION";
     public static final String RECEIVE_NOTICE_STATUS = "RECEIVE_NOTICE_STATUS";
     public static final String ACCOUNT_STATUS = "ACCOUNT_STATUS";
@@ -107,6 +108,12 @@ public class UserManage extends BaseEntity {
     @TableField(PASSWORD)
 //    @NotBlank(message = "密码不能为空")
     private String password;
+
+    @ExcelIgnore
+    @ApiModelProperty(value = "密码")
+    @TableField(PASSWORD_TIME)
+//    @NotBlank(message = "密码不能为空")
+    private String passwordTime;
 
     @ExcelIgnore
     @ApiModelProperty(value = "微信授权")

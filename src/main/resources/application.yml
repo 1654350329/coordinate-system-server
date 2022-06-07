@@ -44,17 +44,12 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath*:mapper/*Mapper.xml
 
-fdfs:
-  so-timeout: 1501 # 超时时间
-  connect-timeout: 601 # 连接超时时间
-  tracker-list: # tracker地址：你的虚拟机服务器地址+端口（默认是22122）
-    - 192.168.110.31:22122
 
 
 markerhub:
   jwt:
     header: Authorization
-    expire: 604800 #7天，秒单位
+    expire: 1800 #30分钟，秒单位
     secret: ji8n3439n439n43ld9ne9343fdfer49h
 
 qiniu:

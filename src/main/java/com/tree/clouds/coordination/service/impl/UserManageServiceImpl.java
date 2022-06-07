@@ -3,6 +3,7 @@ package com.tree.clouds.coordination.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -99,6 +101,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
             // 加密后密码
             String password = bCryptPasswordEncoder.encode("888888");
             userManage.setPassword(password);
+            userManage.setPasswordTime(DateUtil.formatDate(new Date()));
             userManage.setUserId(null);
             this.save(userManage);
             //绑定角色
@@ -192,6 +195,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
         UserManage userManage = BeanUtil.toBean(userManageBO, UserManage.class);
         String password = bCryptPasswordEncoder.encode(Base64.decodeStr(userManage.getPassword()));
         userManage.setPassword(password);
+        userManage.setPasswordTime(DateUtil.formatDate(new Date()));
         this.save(userManage);
         //绑定角色
         roleUserService.addRole(userManageBO.getRoleIds(), userManage.getUserId());
@@ -244,6 +248,7 @@ public class UserManageServiceImpl extends ServiceImpl<UserManageMapper, UserMan
     @Override
     public void updatePassword(UpdatePasswordVO updatePasswordVO) {
         String password = bCryptPasswordEncoder.encode(Base64.decodeStr(updatePasswordVO.getPassword()));
+        PwdCheckUtil.checkStrongPwd(password);
         UserManage user = new UserManage();
         user.setPassword(password);
         user.setUserId(LoginUserUtil.getUserId());
